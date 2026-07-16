@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Iterable
 
 from openpyxl import Workbook, load_workbook
+from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
@@ -88,86 +89,102 @@ def write_csv(path: Path, fields: list[str], rows: Iterable[dict]) -> None:
         writer.writerows(rows)
 
 
-def style_sheet(ws, freeze="A2", filter_range=None):
+def prepare_stream_sheet(ws, headers: list[str], widths: list[int] | None = None):
+    """Prepare a write-only worksheet with a styled, frozen, filterable header."""
     ws.sheet_view.showGridLines = False
-    if freeze:
-        ws.freeze_panes = freeze
-    if filter_range:
-        ws.auto_filter.ref = filter_range
-    fill = PatternFill("solid", fgColor="1F4E78")
-    for cell in ws[1]:
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{get_column_letter(len(headers))}1"
+    cells = []
+    for value in headers:
+        cell = WriteOnlyCell(ws, value=value)
         cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = fill
+        cell.fill = PatternFill("solid", fgColor="1F4E78")
         cell.alignment = Alignment(wrap_text=True)
-    for column in ws.columns:
-        values = [len(str(c.value)) for c in column[:200] if c.value is not None]
-        ws.column_dimensions[get_column_letter(column[0].column)].width = min(max(values or [8]) + 2, 45)
+        cells.append(cell)
+    ws.append(cells)
+    for index, width in enumerate(widths or [18] * len(headers), 1):
+        ws.column_dimensions[get_column_letter(index)].width = width
 
 
-def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list[dict], country_rows: list[dict], cfg: dict, manifest: dict):
-    wb = Workbook()
-    wb.remove(wb.active)
+def append_values(ws, values, percentage_columns=()):
+    cells = []
+    for index, value in enumerate(values, 1):
+        cell = WriteOnlyCell(ws, value=value)
+        if index in percentage_columns:
+            cell.number_format = "0.00%"
+        cells.append(cell)
+    ws.append(cells)
+
+
+def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list[dict], country_rows: list[dict], cfg: dict, manifest: dict, location_rows_per_sheet: int = 500_000):
+    if not 1 <= location_rows_per_sheet <= 1_048_575:
+        raise ValueError("location_rows_per_sheet must leave room for the Excel header row")
+    wb = Workbook(write_only=True)
     ws = wb.create_sheet("Executive_Summary")
-    ws.append(["Nexus & Permissible Study Location Analysis", "Value"])
-    ws.append(["Result status", summary["result_status"]])
-    ws.append(["Denominator", "All unique study records accessible through the ClinicalTrials.gov API in this completed snapshot."])
-    ws.append(["Snapshot applicability", "Completed all-study snapshot; primary denominator applies." if summary["snapshot_complete"] else "PARTIAL smoke-test snapshot; the target denominator above is not satisfied and these results are not final."])
-    ws.append(["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."])
-    ws.append(["Total unique studies", summary["total_studies"]])
+    prepare_stream_sheet(ws, ["Nexus & Permissible Study Location Analysis", "Value"], [50, 95])
+    append_values(ws, ["Result status", summary["result_status"]])
+    append_values(ws, ["Denominator", "All unique study records accessible through the ClinicalTrials.gov API in this completed snapshot."])
+    append_values(ws, ["Snapshot applicability", "Completed all-study snapshot; primary denominator applies." if summary["snapshot_complete"] else "PARTIAL smoke-test snapshot; the target denominator above is not satisfied and these results are not final."])
+    append_values(ws, ["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."])
+    append_values(ws, ["Total unique studies", summary["total_studies"]])
     for b in BUCKETS:
-        ws.append([f"{b} count", summary["buckets"][b]["count"]])
-        ws.append([f"{b} % (primary all-study denominator)", summary["buckets"][b]["percentage"]])
-        ws.cell(ws.max_row, 2).number_format = "0.00%"
-    ws.append(["Known-location studies", summary["known_location_studies"]])
-    ws.append(["Nexus % among known locations (secondary)", summary["secondary_known_location"]["nexus_percentage"]])
-    ws.cell(ws.max_row, 2).number_format = "0.00%"
-    ws.append(["Permissible % among known locations (secondary)", summary["secondary_known_location"]["permissible_percentage"]])
-    ws.cell(ws.max_row, 2).number_format = "0.00%"
-    style_sheet(ws, freeze="A2")
-    ws.column_dimensions["A"].width = 50; ws.column_dimensions["B"].width = 95
-    for row in range(2, ws.max_row + 1): ws.cell(row, 2).alignment = Alignment(wrap_text=True, vertical="top")
+        append_values(ws, [f"{b} count", summary["buckets"][b]["count"]])
+        append_values(ws, [f"{b} % (primary all-study denominator)", summary["buckets"][b]["percentage"]], (2,))
+    append_values(ws, ["Known-location studies", summary["known_location_studies"]])
+    append_values(ws, ["Nexus % among known locations (secondary)", summary["secondary_known_location"]["nexus_percentage"]], (2,))
+    append_values(ws, ["Permissible % among known locations (secondary)", summary["secondary_known_location"]["permissible_percentage"]], (2,))
 
     cs = wb.create_sheet("Classification_Summary")
-    cs.append(["bucket", "count", "percentage_total", "percentage_known_locations", "denominator_type"])
+    prepare_stream_sheet(cs, ["bucket", "count", "percentage_total", "percentage_known_locations", "denominator_type"], [16, 14, 20, 27, 48])
     for b in BUCKETS:
         known_pct = pct(summary["buckets"][b]["count"], summary["known_location_studies"]) if b != "UNKNOWN" else None
-        cs.append([b, summary["buckets"][b]["count"], summary["buckets"][b]["percentage"], known_pct,
-                   "primary: all studies; known-location is secondary"])
-    for row in cs.iter_rows(min_row=2, min_col=3, max_col=4):
-        for cell in row: cell.number_format = "0.00%"
-    style_sheet(cs, filter_range=f"A1:E{cs.max_row}")
+        append_values(cs, [b, summary["buckets"][b]["count"], summary["buckets"][b]["percentage"], known_pct,
+                           "primary: all studies; known-location is secondary"], (3, 4))
 
-    for name, fields, rows in [("Study_Detail", TRIAL_FIELDS, trials), ("Country_Counts", list(country_rows[0]) if country_rows else ["country", "unique_study_count", "percentage_total", "percentage_known_locations"], country_rows), ("Locations", LOCATION_FIELDS, locations)]:
-        sh = wb.create_sheet(name); sh.append(fields)
-        for row in rows: sh.append([row.get(f) for f in fields])
-        if name == "Country_Counts":
-            for cells in sh.iter_rows(min_row=2, min_col=3, max_col=4):
-                for cell in cells: cell.number_format = "0.00%"
-        style_sheet(sh, filter_range=f"A1:{get_column_letter(len(fields))}{max(1, sh.max_row)}")
+    detail = wb.create_sheet("Study_Detail")
+    prepare_stream_sheet(detail, TRIAL_FIELDS, [16, 45, 18, 20, 45, 14, 18, 12, 14, 16, 18, 14, 14, 20])
+    for row in trials:
+        append_values(detail, [row.get(f) for f in TRIAL_FIELDS])
+
+    countries = wb.create_sheet("Country_Counts")
+    country_fields = ["country", "unique_study_count", "percentage_total", "percentage_known_locations"]
+    prepare_stream_sheet(countries, country_fields, [30, 22, 22, 30])
+    for row in country_rows:
+        append_values(countries, [row.get(f) for f in country_fields], (3, 4))
+
+    location_sheet = None
+    location_sheet_number = 0
+    rows_in_sheet = 0
+    for row in locations:
+        if location_sheet is None or rows_in_sheet >= location_rows_per_sheet:
+            location_sheet_number += 1
+            name = "Locations" if location_sheet_number == 1 else f"Locations_{location_sheet_number:03d}"
+            location_sheet = wb.create_sheet(name)
+            prepare_stream_sheet(location_sheet, LOCATION_FIELDS, [16, 16, 45, 24, 24, 18, 28])
+            rows_in_sheet = 0
+        append_values(location_sheet, [row.get(f) for f in LOCATION_FIELDS])
+        rows_in_sheet += 1
+    if location_sheet is None:
+        location_sheet = wb.create_sheet("Locations")
+        prepare_stream_sheet(location_sheet, LOCATION_FIELDS, [16, 16, 45, 24, 24, 18, 28])
 
     defs = wb.create_sheet("Definitions")
-    defs.append(["Item", "Definition"])
-    defs.append(["Unit of analysis", "One unique NCT ID"])
-    defs.append(["NEXUS", "At least one registered location in configured US and at least one in configured China"])
-    defs.append(["PERMISSIBLE", "No configured US location and at least one usable location country"])
-    defs.append(["US_ONLY", "At least one configured US location and no configured China location"])
-    defs.append(["UNKNOWN", "No usable location-country metadata"])
-    defs.append(["US values", ", ".join(cfg["us_countries"])])
-    defs.append(["China values", ", ".join(cfg["china_countries"])])
-    defs.append(["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."])
-    style_sheet(defs); defs.column_dimensions["B"].width = 100
+    prepare_stream_sheet(defs, ["Item", "Definition"], [28, 100])
+    for row in [["Unit of analysis", "One unique NCT ID"], ["NEXUS", "At least one registered location in configured US and at least one in configured China"], ["PERMISSIBLE", "No configured US location and at least one usable location country"], ["US_ONLY", "At least one configured US location and no configured China location"], ["UNKNOWN", "No usable location-country metadata"], ["US values", ", ".join(cfg["us_countries"])], ["China values", ", ".join(cfg["china_countries"])], ["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."]]:
+        append_values(defs, row)
 
-    meta = wb.create_sheet("Run_Metadata"); meta.append(["Key", "Value"])
+    meta = wb.create_sheet("Run_Metadata"); prepare_stream_sheet(meta, ["Key", "Value"], [35, 100])
     for key, value in manifest.items():
-        meta.append([key, json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else value])
-    style_sheet(meta); meta.column_dimensions["B"].width = 100
+        append_values(meta, [key, json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else value])
     wb.save(path)
 
 
 def verify_workbook(path: Path, summary: dict):
     wb = load_workbook(path, data_only=False, read_only=True)
-    required = ["Executive_Summary", "Classification_Summary", "Study_Detail", "Country_Counts", "Locations", "Definitions", "Run_Metadata"]
-    if wb.sheetnames != required:
+    fixed = ["Executive_Summary", "Classification_Summary", "Study_Detail", "Country_Counts"]
+    location_sheets = [name for name in wb.sheetnames if name == "Locations" or name.startswith("Locations_")]
+    required_tail = ["Definitions", "Run_Metadata"]
+    if wb.sheetnames[:4] != fixed or not location_sheets or wb.sheetnames[-2:] != required_tail:
         raise AssertionError(f"Unexpected workbook sheets: {wb.sheetnames}")
     values = {row[0].value: row[1].value for row in wb["Executive_Summary"].iter_rows(min_row=2)}
     if values["Total unique studies"] != summary["total_studies"]:
@@ -255,7 +272,8 @@ def main(argv: list[str] | None = None) -> int:
              "- Location-proxy limitation: registered or planned facilities do not confirm participant nationality or actual country-level enrollment."]
     (out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     workbook_path = out / "nexus_permissible_results.xlsx"
-    make_workbook(workbook_path, summary, trials, locations, country_rows, cfg, manifest)
+    make_workbook(workbook_path, summary, trials, locations, country_rows, cfg, manifest,
+                  location_rows_per_sheet=cfg.get("excel_location_rows_per_sheet", 500_000))
     verify_workbook(workbook_path, summary)
     print(out)
     return 0

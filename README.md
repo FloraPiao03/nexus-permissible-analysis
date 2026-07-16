@@ -45,7 +45,7 @@ Do not cite limited-page output as a final result. It is visibly marked `PARTIAL
 - `trials.csv` (one row per unique NCT ID)
 - `locations_long.csv` (one row per registered facility/location)
 - `country_counts.csv` and `country_vocabulary.csv`
-- `nexus_permissible_results.xlsx` with the seven required worksheets
+- `nexus_permissible_results.xlsx` with the required worksheets. Large location data is automatically split into `Locations`, `Locations_002`, and subsequent sheets according to `excel_location_rows_per_sheet` (default 500,000 data rows per sheet).
 
 Outputs are placed in `runs/run_<timestamp>/out/`. The entire `runs/` tree is gitignored, so generated API data and reports are not committed.
 
