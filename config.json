@@ -1,0 +1,22 @@
+{
+  "api_endpoint": "https://clinicaltrials.gov/api/v2/studies",
+  "user_agent": "nexus-permissible-analysis/1.0 (contact: replace-with-your-email@example.com)",
+  "page_size": 1000,
+  "request_timeout_seconds": 60,
+  "max_retries": 6,
+  "retry_base_seconds": 1.0,
+  "us_countries": ["United States"],
+  "china_countries": ["China"],
+  "tracked_separately": {
+    "hong_kong": ["Hong Kong"],
+    "macau": ["Macau", "Macao"],
+    "taiwan": ["Taiwan"],
+    "us_territories": [
+      "Puerto Rico",
+      "Guam",
+      "American Samoa",
+      "Northern Mariana Islands",
+      "Virgin Islands (U.S.)"
+    ]
+  }
+}
