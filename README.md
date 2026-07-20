@@ -32,6 +32,15 @@ All studies
 
 Percentages among known-location and HAS_US studies are secondary diagnostics. The all-study denominator remains primary.
 
+## Supported analysis scopes
+
+The project preserves two separately labeled views using the same validated five-category geography model:
+
+1. **All accessible studies** — the original complete-snapshot view in `runs/run_<timestamp>/out_v2/`.
+2. **Interventional only** — an additional view where `study_type == "INTERVENTIONAL"`, written to `runs/run_<timestamp>/out_interventional/`.
+
+The Interventional denominator includes only the exact registry value `INTERVENTIONAL`; it does not include `OBSERVATIONAL`, `EXPANDED_ACCESS`, blank, or other study types. This view filters the validated `out_v2/trials.csv` and reuses its final classifications, so it does not require another API harvest or modify the raw snapshot.
+
 ## Setup and quick start
 
 ```bash
@@ -46,6 +55,15 @@ python analyze.py --run runs/run_<smoke-test-timestamp> --output-name out_v2
 
 python harvest.py --outdir runs
 python analyze.py --run runs/run_<full-run-timestamp> --output-name out_v2
+
+python analyze_interventional.py \
+  --source runs/run_<full-run-timestamp>/out_v2/trials.csv \
+  --all-summary runs/run_<full-run-timestamp>/out_v2/summary.json \
+  --outdir runs/run_<full-run-timestamp>/out_interventional
+
+python audit_interventional.py \
+  --source runs/run_<full-run-timestamp>/out_v2/trials.csv \
+  --outdir runs/run_<full-run-timestamp>/out_interventional
 ```
 
 Do not cite limited-page output as a final result. It is visibly marked `PARTIAL_NON_FINAL_SMOKE_TEST` throughout the generated reports. A snapshot is complete only when pagination ends with no next-page token; no expected study count is hard-coded.
@@ -63,6 +81,8 @@ Do not cite limited-page output as a final result. It is visibly marked `PARTIAL
 - `nexus_permissible_results.xlsx` with the required worksheets. Large location data is automatically split into `Locations`, `Locations_002`, and subsequent sheets according to `excel_location_rows_per_sheet` (default 500,000 data rows per sheet).
 
 Revised five-category outputs are placed in `runs/run_<timestamp>/out_v2/` by default, preserving historical `out/` results. Use `--output-name` for another explicit versioned directory. The entire `runs/` tree is gitignored, so generated API data and reports are not committed unless deliberately force-added.
+
+The Interventional-only command creates `summary_interventional.md`, `summary_interventional.json`, `trials_interventional.csv`, and `nexus_permissible_interventional.xlsx` in the separate `out_interventional/` directory. The workbook contains Executive Summary, Classification Summary, Study Detail, Definitions, Run Metadata, and All-vs-Interventional Comparison sheets.
 
 ## Validation
 

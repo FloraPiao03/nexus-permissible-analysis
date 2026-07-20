@@ -441,6 +441,32 @@ python harvest.py --outdir runs
 python analyze.py --run runs/run_<timestamp> --output-name out_v2
 ```
 
+## Additional Interventional-only analysis scope
+
+The project now supports two non-overwriting analysis scopes:
+
+1. `out_v2/`: all accessible unique studies in the completed frozen snapshot;
+2. `out_interventional/`: exact filtering of the validated `out_v2/trials.csv` where `study_type == "INTERVENTIONAL"`.
+
+The Interventional-only view does not redefine the all-study result. It retains the same five categories and `NO_US` / `HAS_US` groups, excludes `OBSERVATIONAL`, `EXPANDED_ACCESS`, blank, and other values, and requires no new API harvest.
+
+Observed `study_type` counts are: INTERVENTIONAL 453,297; OBSERVATIONAL 138,735; EXPANDED_ACCESS 1,059; blank 975.
+
+Interventional-only results: total 453,297; known location 411,859; UNKNOWN 41,438; PERMISSIBLE 250,059; US_ONLY 138,498; US_NON_CHINA_MULTI 20,925; NEXUS 2,377; HAS_US 161,800.
+
+```bash
+python analyze_interventional.py \
+  --source runs/run_20260716T092516Z/out_v2/trials.csv \
+  --all-summary runs/run_20260716T092516Z/out_v2/summary.json \
+  --outdir runs/run_20260716T092516Z/out_interventional
+
+python audit_interventional.py \
+  --source runs/run_20260716T092516Z/out_v2/trials.csv \
+  --outdir runs/run_20260716T092516Z/out_interventional
+```
+
+New outputs are `summary_interventional.md`, `summary_interventional.json`, `trials_interventional.csv`, `nexus_permissible_interventional.xlsx`, plus independent validation file `interventional_audit.json`. Locations remain registered or planned facilities, not confirmed participant nationality or actual country-level enrollment.
+
 Check manifest completeness:
 
 ```bash

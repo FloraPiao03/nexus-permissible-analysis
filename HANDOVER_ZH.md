@@ -442,6 +442,32 @@ python harvest.py --outdir runs
 python analyze.py --run runs/run_<timestamp> --output-name out_v2
 ```
 
+## Interventional-only 附加分析范围
+
+项目现在支持两个不会互相覆盖的分析范围：
+
+1. `out_v2/`：完整冻结快照中的所有可访问唯一研究；
+2. `out_interventional/`：从已验证 `out_v2/trials.csv` 精确筛选 `study_type == "INTERVENTIONAL"`。
+
+Interventional-only 不是对原全量结果的重新定义。它沿用完全相同的五分类和 `NO_US` / `HAS_US` 分组，不纳入 `OBSERVATIONAL`、`EXPANDED_ACCESS`、空值或其他类型，也不需要重新调用 API。
+
+冻结快照中的 `study_type` 词汇计数为：INTERVENTIONAL 453,297；OBSERVATIONAL 138,735；EXPANDED_ACCESS 1,059；空值 975。
+
+Interventional-only 结果：总数 453,297；已知地点 411,859；UNKNOWN 41,438；PERMISSIBLE 250,059；US_ONLY 138,498；US_NON_CHINA_MULTI 20,925；NEXUS 2,377；HAS_US 161,800。
+
+```bash
+python analyze_interventional.py \
+  --source runs/run_20260716T092516Z/out_v2/trials.csv \
+  --all-summary runs/run_20260716T092516Z/out_v2/summary.json \
+  --outdir runs/run_20260716T092516Z/out_interventional
+
+python audit_interventional.py \
+  --source runs/run_20260716T092516Z/out_v2/trials.csv \
+  --outdir runs/run_20260716T092516Z/out_interventional
+```
+
+新增输出为 `summary_interventional.md`、`summary_interventional.json`、`trials_interventional.csv`、`nexus_permissible_interventional.xlsx` 和独立核验文件 `interventional_audit.json`。地点含义仍是已登记或计划中的研究设施，不代表受试者国籍或实际国家级入组。
+
 验证 manifest 状态：
 
 ```bash
