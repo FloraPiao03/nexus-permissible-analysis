@@ -8,14 +8,29 @@ ClinicalTrials.gov records registered or planned study facilities. Location meta
 
 The primary denominator is all unique study records accessible through the official ClinicalTrials.gov API v2 at the time of a **completed** harvest. No study type, sponsor, status, phase, date, intervention, or therapeutic-area filters are applied. One unique NCT ID is the unit of analysis.
 
-- `NEXUS`: at least one configured United States location and at least one configured China location.
-- `PERMISSIBLE`: no configured United States location and at least one usable country.
-- `US_ONLY`: at least one configured United States location and no configured China location.
-- `UNKNOWN`: no usable location-country metadata.
+- `UNKNOWN`: no usable registered location-country value.
+- `PERMISSIBLE`: at least one usable country and no configured United States location.
+- `US_ONLY`: the complete unique country set is exactly `{United States}`.
+- `US_NON_CHINA_MULTI`: contains United States, no China, and at least one additional non-US country.
+- `NEXUS`: contains at least one United States location and at least one China location; other countries may also be present.
 
 The baseline definitions are exactly `United States` and `China`. Puerto Rico and other US territories are not automatically US; Hong Kong, Macau/Macao, and Taiwan are not automatically China. All definitions live in `config.json`.
 
-The four buckets are mutually exclusive and exhaustive. Missing location data is never Permissible. Percentages among studies with known locations are reported only as secondary metrics.
+The five buckets are mutually exclusive and exhaustive. Missing location data is never Permissible. Nexus and Permissible alone do not partition the registry: known-location studies are first split into `NO_US` (= PERMISSIBLE) and `HAS_US`; `HAS_US` is then split into `US_ONLY`, `US_NON_CHINA_MULTI`, and `NEXUS`.
+
+```text
+All studies
+├── UNKNOWN
+└── Known-location studies
+    ├── NO_US
+    │   └── PERMISSIBLE
+    └── HAS_US
+        ├── US_ONLY
+        ├── US_NON_CHINA_MULTI
+        └── NEXUS
+```
+
+Percentages among known-location and HAS_US studies are secondary diagnostics. The all-study denominator remains primary.
 
 ## Setup and quick start
 
@@ -27,10 +42,10 @@ python -m pip install -r requirements.txt
 python selftest.py
 
 python harvest.py --outdir runs --limit-pages 3
-python analyze.py --run runs/run_<smoke-test-timestamp>
+python analyze.py --run runs/run_<smoke-test-timestamp> --output-name out_v2
 
 python harvest.py --outdir runs
-python analyze.py --run runs/run_<full-run-timestamp>
+python analyze.py --run runs/run_<full-run-timestamp> --output-name out_v2
 ```
 
 Do not cite limited-page output as a final result. It is visibly marked `PARTIAL_NON_FINAL_SMOKE_TEST` throughout the generated reports. A snapshot is complete only when pagination ends with no next-page token; no expected study count is hard-coded.
@@ -47,7 +62,7 @@ Do not cite limited-page output as a final result. It is visibly marked `PARTIAL
 - `country_counts.csv` and `country_vocabulary.csv`
 - `nexus_permissible_results.xlsx` with the required worksheets. Large location data is automatically split into `Locations`, `Locations_002`, and subsequent sheets according to `excel_location_rows_per_sheet` (default 500,000 data rows per sheet).
 
-Outputs are placed in `runs/run_<timestamp>/out/`. The entire `runs/` tree is gitignored, so generated API data and reports are not committed.
+Revised five-category outputs are placed in `runs/run_<timestamp>/out_v2/` by default, preserving historical `out/` results. Use `--output-name` for another explicit versioned directory. The entire `runs/` tree is gitignored, so generated API data and reports are not committed unless deliberately force-added.
 
 ## Validation
 
@@ -60,7 +75,7 @@ python selftest.py
 python -m unittest discover -v
 ```
 
-Synthetic cases manually specify expected results for US+China, US only, China only, European locations, missing locations, Puerto Rico, Hong Kong, Taiwan, duplicate NCT IDs, and both observational and interventional studies.
+Synthetic cases manually specify expected results for US+China, US-only, US+non-China countries, China-only, European locations, missing/blank/whitespace locations, Puerto Rico and US territories, Hong Kong, Macau/Macao, Taiwan, exact-string aliases, duplicate NCT IDs, and both observational and interventional studies.
 
 ## Known limitations
 
