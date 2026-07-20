@@ -84,6 +84,13 @@ Revised five-category outputs are placed in `runs/run_<timestamp>/out_v2/` by de
 
 The Interventional-only command creates `summary_interventional.md`, `summary_interventional.json`, `trials_interventional.csv`, and `nexus_permissible_interventional.xlsx` in the separate `out_interventional/` directory. The workbook contains Executive Summary, Classification Summary, Study Detail, Definitions, Run Metadata, and All-vs-Interventional Comparison sheets.
 
+## Published results — 2026-07-16 snapshot
+
+- **All-study results:** 594,066 studies; the existing workbook remains available from the [`results-20260716` release](https://github.com/FloraPiao03/nexus-permissible-analysis/releases/tag/results-20260716).
+- **Interventional-only results:** exact scope `study_type == "INTERVENTIONAL"`; 453,297 studies, including 2,377 NEXUS (0.5244%) and 250,059 PERMISSIBLE (55.1645%). Review the [committed Interventional summary](runs/run_20260716T092516Z/out_interventional/summary_interventional.md) or download the detailed workbook from the [`results-interventional-20260716` release](https://github.com/FloraPiao03/nexus-permissible-analysis/releases/tag/results-interventional-20260716).
+
+Interventional workbook SHA-256: `697b80cab03bc55c57863ffd47ecc7fbbad696deb6f8077db66071e84e9f45ce`.
+
 ## Validation
 
 Hard checks cover NCT IDs, duplicate reporting, raw-file hashes and counts, bucket exhaustiveness, category invariants, correct denominators, and Excel/JSON count agreement. A missing or unverifiable manifest is rejected. Partial snapshots may be analyzed for smoke testing but are explicitly non-final in Markdown, JSON, and Excel.

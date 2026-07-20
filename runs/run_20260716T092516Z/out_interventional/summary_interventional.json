@@ -1,0 +1,157 @@
+{
+  "total_studies": 453297,
+  "known_location_studies": 411859,
+  "unknown_location_studies": 41438,
+  "buckets": {
+    "UNKNOWN": {
+      "count": 41438,
+      "percentage_total_interventional": 0.09141467955887642,
+      "percentage_known_location_interventional": null,
+      "percentage_interventional_has_us": null
+    },
+    "PERMISSIBLE": {
+      "count": 250059,
+      "percentage_total_interventional": 0.5516449480142158,
+      "percentage_known_location_interventional": 0.6071471061698299,
+      "percentage_interventional_has_us": null
+    },
+    "US_ONLY": {
+      "count": 138498,
+      "percentage_total_interventional": 0.3055347818317792,
+      "percentage_known_location_interventional": 0.336275278675469,
+      "percentage_interventional_has_us": 0.855982694684796
+    },
+    "US_NON_CHINA_MULTI": {
+      "count": 20925,
+      "percentage_total_interventional": 0.046161787966829695,
+      "percentage_known_location_interventional": 0.05080622251790055,
+      "percentage_interventional_has_us": 0.12932632880098888
+    },
+    "NEXUS": {
+      "count": 2377,
+      "percentage_total_interventional": 0.005243802628298886,
+      "percentage_known_location_interventional": 0.005771392636800458,
+      "percentage_interventional_has_us": 0.01469097651421508
+    }
+  },
+  "us_presence_groups": {
+    "UNKNOWN": {
+      "count": 41438,
+      "percentage_total_interventional": 0.09141467955887642
+    },
+    "NO_US": {
+      "count": 250059,
+      "percentage_total_interventional": 0.5516449480142158,
+      "percentage_known_location_interventional": 0.6071471061698299
+    },
+    "HAS_US": {
+      "count": 161800,
+      "percentage_total_interventional": 0.35694037242690774,
+      "percentage_known_location_interventional": 0.39285289383017
+    }
+  },
+  "reconciliation_differences": {
+    "five_buckets_equal_total": 0,
+    "permissible_plus_has_us_equal_known": 0,
+    "us_subcategories_equal_has_us": 0,
+    "row_group_counts_match_bucket_groups": {
+      "UNKNOWN": 0,
+      "NO_US": 0,
+      "HAS_US": 0
+    }
+  },
+  "analysis_scope": "study_type == \"INTERVENTIONAL\"",
+  "source_study_level_file": "/Users/mac/Desktop/pfizerProj/nexus-permissible-analysis/runs/run_20260716T092516Z/out_v2/trials.csv",
+  "source_all_study_summary": "/Users/mac/Desktop/pfizerProj/nexus-permissible-analysis/runs/run_20260716T092516Z/out_v2/summary.json",
+  "generated_at_utc": "2026-07-20T03:02:55.328648+00:00",
+  "classification_model_version": 2,
+  "study_type_vocabulary_all_studies": {
+    "": 975,
+    "EXPANDED_ACCESS": 1059,
+    "INTERVENTIONAL": 453297,
+    "OBSERVATIONAL": 138735
+  },
+  "all_vs_interventional_comparison": [
+    {
+      "metric": "Total denominator",
+      "all_count": 594066,
+      "all_pct": 1.0,
+      "int_count": 453297,
+      "int_pct": 1.0,
+      "count_difference_int_minus_all": -140769,
+      "percentage_point_difference": 0.0,
+      "percentage_denominator": "Each scope's total denominator"
+    },
+    {
+      "metric": "Known-location denominator",
+      "all_count": 534211,
+      "all_pct": 0.8992452017115944,
+      "int_count": 411859,
+      "int_pct": 0.9085853204411236,
+      "count_difference_int_minus_all": -122352,
+      "percentage_point_difference": 0.009340118729529223,
+      "percentage_denominator": "Each scope's total denominator"
+    },
+    {
+      "metric": "UNKNOWN",
+      "all_count": 59855,
+      "all_pct": 0.10075479828840567,
+      "int_count": 41438,
+      "int_pct": 0.09141467955887642,
+      "count_difference_int_minus_all": -18417,
+      "percentage_point_difference": -0.009340118729529251,
+      "percentage_denominator": "Each scope's total denominator"
+    },
+    {
+      "metric": "PERMISSIBLE",
+      "all_count": 340665,
+      "all_pct": 0.5734463847451293,
+      "int_count": 250059,
+      "int_pct": 0.5516449480142158,
+      "count_difference_int_minus_all": -90606,
+      "percentage_point_difference": -0.021801436730913504,
+      "percentage_denominator": "Each scope's total denominator"
+    },
+    {
+      "metric": "US_ONLY",
+      "all_count": 167656,
+      "all_pct": 0.28221780071574537,
+      "int_count": 138498,
+      "int_pct": 0.3055347818317792,
+      "count_difference_int_minus_all": -29158,
+      "percentage_point_difference": 0.023316981116033808,
+      "percentage_denominator": "Each scope's total denominator"
+    },
+    {
+      "metric": "US_NON_CHINA_MULTI",
+      "all_count": 23369,
+      "all_pct": 0.03933738002174843,
+      "int_count": 20925,
+      "int_pct": 0.046161787966829695,
+      "count_difference_int_minus_all": -2444,
+      "percentage_point_difference": 0.006824407945081268,
+      "percentage_denominator": "Each scope's total denominator"
+    },
+    {
+      "metric": "NEXUS",
+      "all_count": 2521,
+      "all_pct": 0.004243636228971192,
+      "int_count": 2377,
+      "int_pct": 0.005243802628298886,
+      "count_difference_int_minus_all": -144,
+      "percentage_point_difference": 0.0010001663993276936,
+      "percentage_denominator": "Each scope's total denominator"
+    },
+    {
+      "metric": "HAS_US",
+      "all_count": 193546,
+      "all_pct": 0.325798816966465,
+      "int_count": 161800,
+      "int_pct": 0.35694037242690774,
+      "count_difference_int_minus_all": -31746,
+      "percentage_point_difference": 0.031141555460442727,
+      "percentage_denominator": "Each scope's total denominator"
+    }
+  ],
+  "location_interpretation": "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."
+}
