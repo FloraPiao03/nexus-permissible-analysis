@@ -467,6 +467,44 @@ python audit_interventional.py \
 
 New outputs are `summary_interventional.md`, `summary_interventional.json`, `trials_interventional.csv`, `nexus_permissible_interventional.xlsx`, plus independent validation file `interventional_audit.json`. Locations remain registered or planned facilities, not confirmed participant nationality or actual country-level enrollment.
 
+## Start Date period-comparison extension
+
+New harvests request only two additional API fields: `StartDate` and `StartDateType`. The completed 2026-07-16 frozen snapshot does not contain them. Its raw data and existing all-time / Interventional-only results remain valid, but it cannot support a real start-period comparison; a new completed snapshot is required.
+
+The default reference date is the UTC harvest date in the new snapshot's `manifest.json`, with deterministic override through `--reference-date YYYY-MM-DD`. Exact calendar-year boundaries are used:
+
+- `RECENT_3Y`: `reference_date - 3 years < Start Date <= reference_date`;
+- `YEARS_4_TO_6_AGO`: `reference_date - 6 years < Start Date <= reference_date - 3 years`.
+
+Month- and year-precision values are treated as possible date intervals. Assignment occurs only when the entire interval belongs to one cohort; boundary-crossing intervals become `TIME_AMBIGUOUS`, while missing or unparseable dates become `TIME_UNKNOWN`. No day or month is silently imputed. Registered Start Date is not confirmed first-participant enrollment, and the comparison is descriptive rather than causal.
+
+The revised `trials.csv` adds `start_date_raw`, `start_date_parsed`, `start_date_type`, `start_date_precision`, and `time_cohort`. Excel adds `Time_Comparison` and `Time_Location_Pivot`, while Definitions records the reference date, boundaries, partial-date rule, and denominators.
+
+### Streaming summary-only mode
+
+`analyze.py --summary-only` is fully implemented. It requires `snapshot_complete: true`, validates every expected page and SHA-256 hash, deduplicates each NCT ID while streaming one page at a time, and immediately updates counters through the shared geographic classifier, Start Date parser, and time-cohort assignment. It does not accumulate all raw study JSON, trial rows, or location rows.
+
+The lightweight mode writes only:
+
+```text
+summary.json
+summary.md
+nexus_permissible_summary.xlsx
+```
+
+It omits trial/location/country CSV files and excludes Study_Detail, Locations, and Country_Counts from Excel. The workbook contains only Executive_Summary, Classification_Summary, Time_Comparison, Time_Location_Pivot, Definitions, and Run_Metadata.
+
+Manifest completeness, explicit absence of a remaining next-page token, page hashes, raw/unique/duplicate counts, five-category and HAS_US checks, five-bucket reconciliation within every one of the six time cohorts, and JSON/Markdown/Excel aggregate agreement remain mandatory. Standard and summary-only modes use the same production business functions and produce identical aggregate results on the synthetic parity fixture. A real streaming validation of the completed 2026-07-16 historical snapshot also exactly matched the validated out_v2 geographic counts and produced only about 28 KB of outputs. Because that snapshot lacks StartDate, all 594,066 studies are explicitly TIME_UNKNOWN and the time-analysis status is UNAVAILABLE rather than a fabricated period result. Zero-denominator cohort percentages remain blank rather than displaying a misleading 100%.
+
+Measured summary-only peak RSS on the 594,066-study historical snapshot was approximately 162 MiB, with a runtime of about six seconds. This excludes raw-snapshot disk storage but demonstrates that analysis does not retain millions of location rows in RAM.
+
+```bash
+.venv/bin/python analyze.py \
+  --run runs/run_<new_timestamp> \
+  --output-name out_time_summary \
+  --summary-only
+```
+
 Check manifest completeness:
 
 ```bash

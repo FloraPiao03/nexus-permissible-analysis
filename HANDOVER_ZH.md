@@ -468,6 +468,44 @@ python audit_interventional.py \
 
 新增输出为 `summary_interventional.md`、`summary_interventional.json`、`trials_interventional.csv`、`nexus_permissible_interventional.xlsx` 和独立核验文件 `interventional_audit.json`。地点含义仍是已登记或计划中的研究设施，不代表受试者国籍或实际国家级入组。
 
+## Start Date 时间段比较扩展
+
+新版本 harvest 额外请求且仅新增 `StartDate` 与 `StartDateType`。旧的 2026-07-16 完整冻结快照没有这两个字段，因此旧 raw 和既有 all-time / Interventional-only 结果保持有效，但不能用于真实的开始时间比较；必须生成一个新的完整快照。
+
+默认 reference date 是新快照 `manifest.json` 中 UTC harvest timestamp 的日期，也可用 `--reference-date YYYY-MM-DD` 固定覆盖。时间段使用精确日历年：
+
+- `RECENT_3Y`：`reference_date - 3 years < Start Date <= reference_date`；
+- `YEARS_4_TO_6_AGO`：`reference_date - 6 years < Start Date <= reference_date - 3 years`。
+
+月精度和年精度被解释为可能日期区间。只有整个区间明确落在单一 cohort 才分配；跨边界为 `TIME_AMBIGUOUS`，缺失或无法解析为 `TIME_UNKNOWN`。不会擅自补成某月某日。Start Date 是注册字段，不等于真实首位受试者入组日期；比较是描述性的，不表示因果。
+
+新版 `trials.csv` 增加 `start_date_raw`、`start_date_parsed`、`start_date_type`、`start_date_precision` 和 `time_cohort`。Excel 增加 `Time_Comparison` 和 `Time_Location_Pivot`，并在 Definitions 写明 reference date、边界和分母。
+
+### Summary-only 流式模式
+
+`analyze.py --summary-only` 已完整实现。它要求 `snapshot_complete: true`，逐页检查文件存在性和 SHA-256，逐 study 进行 NCT ID 去重，并立即调用共享的 geographic classifier、Start Date parser 和 time-cohort assignment 更新计数器。它不会累计全部 raw study JSON、trial rows 或 location rows。
+
+轻量模式仅输出：
+
+```text
+summary.json
+summary.md
+nexus_permissible_summary.xlsx
+```
+
+不会输出 trials/locations/country CSV，也不会在 Excel 中生成 Study_Detail、Locations 或 Country_Counts。轻量 Excel 只有 Executive_Summary、Classification_Summary、Time_Comparison、Time_Location_Pivot、Definitions 和 Run_Metadata。
+
+所有 manifest、无剩余 next-page token、page hash、raw/unique/duplicate count、五分类、HAS_US、六个 time cohorts 各自的五分类 reconciliation，以及 JSON/Markdown/Excel aggregate 一致性仍为硬性验证。标准模式与 summary-only 使用同一套业务函数；合成 fixture 的 aggregate 结果完全一致。7-16 完整历史 snapshot 的真实流式验证也与已验证 out_v2 五分类结果完全一致，轻量输出目录仅约 28 KB；由于旧 snapshot 缺 StartDate，594,066 条均明确进入 TIME_UNKNOWN，时间分析状态为 UNAVAILABLE，而不是伪造时间结果。零分母 cohort 的百分比保持为空值，不会显示成虚假的 100%。
+
+对该 594,066-study 历史 snapshot 的实测 summary-only 峰值 RSS 约为 162 MiB，运行约 6 秒；这不包括 raw snapshot 的磁盘占用，但证明分析阶段无需在 RAM 中保留几百万条 location rows。
+
+```bash
+.venv/bin/python analyze.py \
+  --run runs/run_<new_timestamp> \
+  --output-name out_time_summary \
+  --summary-only
+```
+
 验证 manifest 状态：
 
 ```bash

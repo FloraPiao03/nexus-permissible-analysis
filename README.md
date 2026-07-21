@@ -41,6 +41,33 @@ The project preserves two separately labeled views using the same validated five
 
 The Interventional denominator includes only the exact registry value `INTERVENTIONAL`; it does not include `OBSERVATIONAL`, `EXPANDED_ACCESS`, blank, or other study types. This view filters the validated `out_v2/trials.csv` and reuses its final classifications, so it does not require another API harvest or modify the raw snapshot.
 
+## Start-date period comparison
+
+New snapshots also retain ClinicalTrials.gov `StartDate` and `StartDateType`. The time comparison asks: among studies whose **registered Start Dates** fall in different periods, how has the geographic distribution of registered trial locations changed? Start Date is registry metadata, not confirmed first-participant enrollment, and the descriptive comparison does not imply causation.
+
+By default, the UTC harvest date in `manifest.json` is the deterministic reference date. It can be overridden with `--reference-date YYYY-MM-DD`. Exact calendar-year boundaries are used:
+
+- `RECENT_3Y`: `reference date − 3 years < Start Date <= reference date`.
+- `YEARS_4_TO_6_AGO`: `reference date − 6 years < Start Date <= reference date − 3 years`.
+- Older, future, missing/unparseable, and boundary-crossing partial dates are labeled `OLDER_THAN_6Y`, `FUTURE`, `TIME_UNKNOWN`, and `TIME_AMBIGUOUS` respectively.
+
+Month- and year-precision dates are treated as possible date intervals. They are assigned only when the entire interval is contained in one cohort; no day or month is silently invented.
+
+### Lightweight streaming summaries
+
+Use `--summary-only` when only aggregate Nexus / Permissible and time-period results are needed. This mode verifies the complete manifest, every page and SHA-256 hash, streams one raw page at a time, deduplicates by NCT ID, and immediately updates shared geographic/time counters. It does not retain all studies or locations in memory.
+
+```bash
+python analyze.py \
+  --run runs/run_<full-run-timestamp> \
+  --output-name out_time_summary \
+  --summary-only
+```
+
+It writes only `summary.json`, `summary.md`, and `nexus_permissible_summary.xlsx`. It does not create row-level CSV files, country files, Study Detail, or Locations sheets. The summary workbook contains Executive Summary, Classification Summary, Time Comparison, Time Location Pivot, Definitions, and Run Metadata. Complete manifests must explicitly confirm that no next-page token remains. Hash, raw/unique count, duplicate, all six time-cohort geographic reconciliations, and JSON/Markdown/Excel aggregate agreement remain mandatory. Partial or internally contradictory snapshots are rejected in summary-only mode.
+
+This reduces persistent analysis output from hundreds of megabytes to a few kilobytes while preserving the raw snapshot for reproducibility. Standard mode remains available for detailed exports and uses the same geographic classifier, date parser, time-cohort assignment, and aggregate-summary builder.
+
 ## Setup and quick start
 
 ```bash
@@ -54,7 +81,11 @@ python harvest.py --outdir runs --limit-pages 3
 python analyze.py --run runs/run_<smoke-test-timestamp> --output-name out_v2
 
 python harvest.py --outdir runs
-python analyze.py --run runs/run_<full-run-timestamp> --output-name out_v2
+python analyze.py --run runs/run_<full-run-timestamp> --output-name out_time \
+  --reference-date 2026-07-16
+
+python analyze.py --run runs/run_<full-run-timestamp> \
+  --output-name out_time_summary --summary-only
 
 python analyze_interventional.py \
   --source runs/run_<full-run-timestamp>/out_v2/trials.csv \
@@ -70,7 +101,7 @@ Do not cite limited-page output as a final result. It is visibly marked `PARTIAL
 
 ## Workflow
 
-`harvest.py` requests only the required API v2 fields, uses configurable page size, timeout, User-Agent, exponential-backoff retries for network errors, HTTP 429 and 5xx responses, and follows every next-page token. Raw page JSON files are written to a timestamped directory. The manifest records parameters, counts, completeness, duplicates, and SHA-256 hashes. Failed harvests receive `HARVEST_FAILED.txt` and are not analyzable as valid snapshots.
+`harvest.py` requests only the required API v2 fields, including registered Start Date and Start Date type, uses configurable page size, timeout, User-Agent, exponential-backoff retries for network errors, HTTP 429 and 5xx responses, and follows every next-page token. Raw page JSON files are written to a timestamped directory. The manifest records parameters, counts, completeness, duplicates, and SHA-256 hashes. Failed harvests receive `HARVEST_FAILED.txt` and are not analyzable as valid snapshots.
 
 `analyze.py` verifies the manifest, every raw-file hash, raw and unique counts, and then deduplicates by NCT ID (first observed record wins deterministically). It retains study type and status as metadata without filtering. It writes:
 
@@ -79,6 +110,8 @@ Do not cite limited-page output as a final result. It is visibly marked `PARTIAL
 - `locations_long.csv` (one row per registered facility/location)
 - `country_counts.csv` and `country_vocabulary.csv`
 - `nexus_permissible_results.xlsx` with the required worksheets. Large location data is automatically split into `Locations`, `Locations_002`, and subsequent sheets according to `excel_location_rows_per_sheet` (default 500,000 data rows per sheet).
+
+The workbook also contains `Time_Comparison` and `Time_Location_Pivot`; `Study_Detail` retains the raw/canonical Start Date, original precision and type, and assigned time cohort. Each target cohort has its own denominator and a zero-difference five-category reconciliation.
 
 Revised five-category outputs are placed in `runs/run_<timestamp>/out_v2/` by default, preserving historical `out/` results. Use `--output-name` for another explicit versioned directory. The entire `runs/` tree is gitignored, so generated API data and reports are not committed unless deliberately force-added.
 

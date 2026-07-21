@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 FIELDS = ",".join([
-    "NCTId", "BriefTitle", "StudyType", "OverallStatus",
+    "NCTId", "BriefTitle", "StudyType", "OverallStatus", "StartDate", "StartDateType",
     "LocationFacility", "LocationCity", "LocationState", "LocationZip", "LocationCountry",
 ])
 
@@ -60,25 +60,62 @@ def request_json(url: str, *, user_agent: str, timeout: float, retries: int, bas
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--outdir", type=Path, default=Path("runs"))
+    parser.add_argument("--resume-run", type=Path, help="Resume an incomplete run from its last raw page")
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("config.json"))
     parser.add_argument("--limit-pages", type=int)
     args = parser.parse_args(argv)
     if args.limit_pages is not None and args.limit_pages < 1:
         parser.error("--limit-pages must be at least 1")
+    if args.resume_run and args.limit_pages is not None:
+        parser.error("--resume-run cannot be combined with --limit-pages")
 
     cfg = load_config(args.config)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    run_dir = args.outdir / f"run_{stamp}"
-    raw_dir = run_dir / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=False)
     base_params = {"format": "json", "pageSize": str(cfg.get("page_size", 1000)), "fields": FIELDS}
-    token = None
     files: list[dict] = []
     all_ids: list[str] = []
     next_token_remaining = False
-    page = 0
+    resumed_from_page = 0
+
+    if args.resume_run:
+        run_dir = args.resume_run
+        raw_dir = run_dir / "raw"
+        if (run_dir / "manifest.json").exists():
+            parser.error("completed or manifested runs cannot be resumed")
+        page_paths = sorted(raw_dir.glob("page_*.json")) if raw_dir.is_dir() else []
+        if not page_paths:
+            parser.error("resume run has no raw pages")
+        token = None
+        for expected_page, page_path in enumerate(page_paths, 1):
+            if page_path.name != f"page_{expected_page:06d}.json":
+                parser.error("resume run raw pages are not a contiguous sequence")
+            payload = json.loads(page_path.read_text(encoding="utf-8"))
+            studies = payload.get("studies")
+            if not isinstance(studies, list):
+                parser.error(f"resume page has no valid studies array: {page_path}")
+            files.append({"path": str(page_path.relative_to(run_dir)), "sha256": sha256(page_path), "study_count": len(studies)})
+            for study in studies:
+                value = nct_id(study)
+                if not value:
+                    parser.error(f"resume page contains a record without NCT ID: {page_path}")
+                all_ids.append(value)
+            token = payload.get("nextPageToken")
+            if expected_page < len(page_paths) and not token:
+                parser.error(f"resume page {expected_page} has no token for the following saved page")
+        page = len(page_paths)
+        resumed_from_page = page
+        failure_marker = run_dir / "HARVEST_FAILED.txt"
+        if failure_marker.exists():
+            failure_marker.replace(run_dir / f"HARVEST_FAILED_BEFORE_RESUME_{stamp}.txt")
+    else:
+        run_dir = args.outdir / f"run_{stamp}"
+        raw_dir = run_dir / "raw"
+        raw_dir.mkdir(parents=True, exist_ok=False)
+        token = None
+        page = 0
+
     try:
-        while True:
+        while token or page == 0:
             params = dict(base_params)
             if token:
                 params["pageToken"] = token
@@ -126,6 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         "snapshot_complete": complete,
         "partial_reason": None if complete else "page limit reached while a next-page token remained",
         "next_page_token_remaining": next_token_remaining,
+        "resumed_from_page": resumed_from_page,
         "files": files,
     }
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
