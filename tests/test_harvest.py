@@ -12,6 +12,13 @@ def study(nct_id):
 
 
 class HarvestResumeTests(unittest.TestCase):
+    def test_minimum_requested_fields_include_candidate_audit_fields(self):
+        fields = set(harvest.FIELDS.split(","))
+        self.assertIn("InterventionType", fields)
+        self.assertIn("LeadSponsorClass", fields)
+        self.assertNotIn("InterventionName", fields)
+        self.assertNotIn("LeadSponsorName", fields)
+
     def test_resume_preserves_existing_page_and_completes_manifest(self):
         with tempfile.TemporaryDirectory() as td:
             run = Path(td) / "run_failed"

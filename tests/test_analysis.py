@@ -8,7 +8,8 @@ import analyze
 CONFIG = json.loads(Path("config.json").read_text())
 
 
-def study(nct, countries=None, study_type="INTERVENTIONAL", include_locations_module=True):
+def study(nct, countries=None, study_type="INTERVENTIONAL", include_locations_module=True,
+          sponsor_class=None, intervention_types=None):
     locations = [{"facility": f"Site {i}", "country": c} for i, c in enumerate(countries or [], 1)]
     protocol = {
         "identificationModule": {"nctId": nct, "briefTitle": nct},
@@ -17,6 +18,12 @@ def study(nct, countries=None, study_type="INTERVENTIONAL", include_locations_mo
     }
     if include_locations_module:
         protocol["contactsLocationsModule"] = {"locations": locations}
+    if sponsor_class is not None:
+        protocol["sponsorCollaboratorsModule"] = {"leadSponsor": {"class": sponsor_class}}
+    if intervention_types is not None:
+        protocol["armsInterventionsModule"] = {
+            "interventions": [{"type": value} for value in intervention_types]
+        }
     return {"protocolSection": {
         **protocol,
     }}
@@ -114,6 +121,46 @@ class ClassificationTests(unittest.TestCase):
         actual = {bucket: sum(row["bucket"] == bucket for row in rows) for bucket in analyze.BUCKETS}
         self.assertEqual(expected, actual)
         self.assertEqual(14, sum(actual.values()))
+
+    def test_industry_drug_candidate_filter_uses_structured_fields(self):
+        cases = [
+            ("INDUSTRY", ["DRUG"], True),
+            ("INDUSTRY", ["DRUG", "DEVICE"], True),
+            ("INDUSTRY", ["DRUG", "OTHER"], True),
+            ("INDUSTRY", ["DEVICE"], False),
+            ("NIH", ["DRUG"], False),
+            ("INDUSTRY", [], False),
+        ]
+        for index, (sponsor_class, intervention_types, expected) in enumerate(cases, 1):
+            with self.subTest(sponsor_class=sponsor_class, intervention_types=intervention_types):
+                item = study(f"NCTDRUG{index:04d}", ["United States", "China"],
+                             sponsor_class=sponsor_class, intervention_types=intervention_types)
+                self.assertEqual(analyze.product_is_eligible(item, "drug"), expected)
+                row, _ = analyze.extract(item, CONFIG, analyze.date(2026, 7, 16))
+                self.assertEqual(row["bucket"], "NEXUS")
+                self.assertEqual(row["time_cohort"], "TIME_UNKNOWN")
+
+    def test_intervention_combination_audit_is_set_based_and_deterministic(self):
+        counts = analyze.Counter()
+        combinations = analyze.Counter()
+        items = [
+            study("NCT1", sponsor_class="INDUSTRY", intervention_types=["DRUG"]),
+            study("NCT2", sponsor_class="INDUSTRY", intervention_types=["DEVICE", "DRUG", "DRUG"]),
+            study("NCT3", sponsor_class="INDUSTRY", intervention_types=["OTHER", "DRUG"]),
+            study("NCT4", sponsor_class="INDUSTRY", intervention_types=["DEVICE"]),
+            study("NCT5", sponsor_class="OTHER", intervention_types=["DRUG"]),
+            study("NCT6", sponsor_class="INDUSTRY", intervention_types=[]),
+        ]
+        for item in items:
+            analyze.update_intervention_type_audit(counts, combinations, item)
+        audit = analyze.build_intervention_type_audit(counts, combinations)
+        self.assertEqual(audit["total_industry_studies"], 5)
+        self.assertEqual(audit["industry_drug_containing_studies"], 3)
+        self.assertEqual(audit["industry_not_drug_containing_studies"], 2)
+        self.assertEqual(audit["device_involved_drug_studies"], 1)
+        observed = {row["combination"]: row["unique_study_count"] for row in audit["combination_counts"]}
+        self.assertEqual(observed, {"DRUG": 1, "DRUG + DEVICE": 1, "DRUG + OTHER": 1})
+        self.assertEqual(analyze.sponsor_and_intervention_types(items[1])[1], ("DRUG", "DEVICE"))
 
 
 if __name__ == "__main__":

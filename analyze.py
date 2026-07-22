@@ -26,6 +26,74 @@ TRIAL_FIELDS = ["nct_id", "brief_title", "study_type", "overall_status", "start_
 LOCATION_FIELDS = ["nct_id", "location_number", "facility", "city", "state", "postal_code", "country"]
 TIME_COHORTS = ("RECENT_3Y", "YEARS_4_TO_6_AGO", "OLDER_THAN_6Y", "FUTURE", "TIME_UNKNOWN", "TIME_AMBIGUOUS")
 COMPARISON_COHORTS = ("RECENT_3Y", "YEARS_4_TO_6_AGO")
+DRUG_CANDIDATE_DEFINITION = "LeadSponsorClass == INDUSTRY AND contains at least one InterventionType == DRUG"
+
+
+def sponsor_and_intervention_types(study: dict) -> tuple[str, tuple[str, ...]]:
+    protocol = study.get("protocolSection", {})
+    sponsor = (protocol.get("sponsorCollaboratorsModule", {}).get("leadSponsor", {}) or {}).get("class")
+    interventions = (protocol.get("armsInterventionsModule", {}) or {}).get("interventions") or []
+    sponsor_class = sponsor.strip() if isinstance(sponsor, str) else ""
+    intervention_types = tuple(sorted({
+        value.strip() for item in interventions if isinstance(item, dict)
+        for value in [item.get("type")] if isinstance(value, str) and value.strip()
+    }, key=lambda value: (value != "DRUG", value)))
+    return sponsor_class, intervention_types
+
+
+def product_is_eligible(study: dict, study_product: str) -> bool:
+    if study_product == "all":
+        return True
+    sponsor_class, intervention_types = sponsor_and_intervention_types(study)
+    return sponsor_class == "INDUSTRY" and "DRUG" in intervention_types
+
+
+def update_intervention_type_audit(counts: Counter, combinations: Counter, study: dict) -> None:
+    sponsor_class, intervention_types = sponsor_and_intervention_types(study)
+    if sponsor_class != "INDUSTRY":
+        return
+    counts["total_industry_studies"] += 1
+    if not intervention_types:
+        counts["industry_missing_intervention_type"] += 1
+    if "DRUG" not in intervention_types:
+        counts["industry_not_drug_containing"] += 1
+        return
+    counts["industry_drug_containing"] += 1
+    combinations[intervention_types] += 1
+    if "DEVICE" in intervention_types:
+        counts["device_involved_drug_studies"] += 1
+
+
+def build_intervention_type_audit(counts: Counter, combinations: Counter) -> dict:
+    denominator = counts["industry_drug_containing"]
+    rows = [
+        {"intervention_types": list(values), "combination": " + ".join(values), "unique_study_count": count,
+         "percentage_industry_drug_containing": pct(count, denominator)}
+        for values, count in sorted(combinations.items(), key=lambda item: (-item[1], item[0]))
+    ]
+    highlighted = {}
+    named = {
+        "drug_only": ("DRUG",),
+        "drug_other": ("DRUG", "OTHER"),
+        "drug_device": ("DRUG", "DEVICE"),
+        "drug_procedure": ("DRUG", "PROCEDURE"),
+        "drug_behavioral": ("DRUG", "BEHAVIORAL"),
+        "drug_dietary_supplement": ("DRUG", "DIETARY_SUPPLEMENT"),
+    }
+    for key, values in named.items():
+        highlighted[key] = combinations[values]
+    highlighted["other_observed_combinations_containing_drug"] = denominator - sum(highlighted.values())
+    return {
+        "lead_sponsor_filter": "INDUSTRY",
+        "candidate_definition": DRUG_CANDIDATE_DEFINITION,
+        "total_industry_studies": counts["total_industry_studies"],
+        "industry_drug_containing_studies": denominator,
+        "industry_not_drug_containing_studies": counts["industry_not_drug_containing"],
+        "industry_missing_intervention_type": counts["industry_missing_intervention_type"],
+        "device_involved_drug_studies": counts["device_involved_drug_studies"],
+        "highlighted_combination_counts": highlighted,
+        "combination_counts": rows,
+    }
 
 
 def sha256(path: Path) -> str:
@@ -141,6 +209,7 @@ def build_time_analysis_from_counts(time_bucket_counts: dict[str, Counter], refe
         counts = time_bucket_counts[cohort]
         total = cohort_counts[cohort]
         known = total - counts["UNKNOWN"]
+        has_us = counts["US_ONLY"] + counts["US_NON_CHINA_MULTI"] + counts["NEXUS"]
         if sum(counts[b] for b in BUCKETS) != total:
             raise AssertionError(f"{cohort} geographic buckets do not reconcile")
         cohorts[cohort] = {
@@ -151,6 +220,8 @@ def build_time_analysis_from_counts(time_bucket_counts: dict[str, Counter], refe
                     "percentage_known_locations": None if b == "UNKNOWN" else pct(counts[b], known)}
                 for b in BUCKETS
             },
+            "has_us": {"count": has_us, "percentage_cohort": pct(has_us, total),
+                       "percentage_known_locations": pct(has_us, known)},
             "reconciliation_difference": sum(counts[b] for b in BUCKETS) - total,
         }
     metrics = [
@@ -175,6 +246,13 @@ def build_time_analysis_from_counts(time_bucket_counts: dict[str, Counter], refe
     for label, field, bucket in metrics:
         recent = cohorts["RECENT_3Y"]["buckets"][bucket][field]
         older = cohorts["YEARS_4_TO_6_AGO"]["buckets"][bucket][field]
+        comparison.append({"metric": label, "recent_3y": recent, "years_4_to_6_ago": older,
+                           "change": recent - older if recent is not None and older is not None else None,
+                           "change_unit": "count" if field == "count" else "percentage_points"})
+    for label, field in (("HAS_US count", "count"), ("HAS_US % of all cohort", "percentage_cohort"),
+                         ("HAS_US % of known-location", "percentage_known_locations")):
+        recent = cohorts["RECENT_3Y"]["has_us"][field]
+        older = cohorts["YEARS_4_TO_6_AGO"]["has_us"][field]
         comparison.append({"metric": label, "recent_3y": recent, "years_4_to_6_ago": older,
                            "change": recent - older if recent is not None and older is not None else None,
                            "change_unit": "count" if field == "count" else "percentage_points"})
@@ -207,6 +285,22 @@ def build_time_analysis(trials: list[dict], reference_date: date) -> dict:
     if sum(result["cohort_counts_all_time"].values()) != len(trials):
         raise AssertionError("All time cohorts do not reconcile to total studies")
     return result
+
+
+def build_all_vs_drug_diagnostic(all_time: dict, drug_time: dict) -> list[dict]:
+    rows = []
+    for cohort, label in (("RECENT_3Y", "Recent 3Y"), ("YEARS_4_TO_6_AGO", "4–6Y")):
+        all_item = all_time["cohorts"][cohort]
+        drug_item = drug_time["cohorts"][cohort]
+        rows.extend([
+            {"metric": f"{label} denominator", "all_studies": all_item["denominator"],
+             "drug_studies": drug_item["denominator"], "value_type": "count"},
+            {"metric": f"{label} Nexus %", "all_studies": all_item["buckets"]["NEXUS"]["percentage_cohort"],
+             "drug_studies": drug_item["buckets"]["NEXUS"]["percentage_cohort"], "value_type": "percentage"},
+            {"metric": f"{label} Permissible %", "all_studies": all_item["buckets"]["PERMISSIBLE"]["percentage_cohort"],
+             "drug_studies": drug_item["buckets"]["PERMISSIBLE"]["percentage_cohort"], "value_type": "percentage"},
+        ])
+    return rows
 
 
 def extract(study: dict, cfg: dict, reference_date: date | None = None, include_locations: bool = True) -> tuple[dict, list[dict]]:
@@ -270,7 +364,8 @@ def validate_trial_row(row: dict, cfg: dict) -> None:
 
 def build_summary(*, counts: Counter, total: int, time_analysis: dict, manifest: dict, cfg: dict,
                   duplicate_ids: Counter, reference_date: date, run_directory: Path,
-                  summary_only: bool, analysis_timestamp_utc: str) -> dict:
+                  summary_only: bool, analysis_timestamp_utc: str, study_product: str,
+                  intervention_type_audit: dict | None, all_vs_drug_diagnostic: list[dict] | None) -> dict:
     known = total - counts["UNKNOWN"]
     has_us_count = counts["US_ONLY"] + counts["US_NON_CHINA_MULTI"] + counts["NEXUS"]
     if sum(counts[b] for b in BUCKETS) != total:
@@ -296,6 +391,8 @@ def build_summary(*, counts: Counter, total: int, time_analysis: dict, manifest:
         field.strip() for field in manifest.get("request_parameters", {}).get("fields", "").split(",") if field.strip()
     }
     start_date_available = "StartDate" in requested_fields
+    intervention_type_available = "InterventionType" in requested_fields
+    lead_sponsor_class_available = "LeadSponsorClass" in requested_fields
     return {
         "result_status": "FINAL_COMPLETE_SNAPSHOT" if manifest["snapshot_complete"] else "PARTIAL_NON_FINAL_SMOKE_TEST",
         "snapshot_complete": manifest["snapshot_complete"],
@@ -310,6 +407,14 @@ def build_summary(*, counts: Counter, total: int, time_analysis: dict, manifest:
         "start_date_field_available_in_snapshot": start_date_available,
         "time_analysis_status": "AVAILABLE" if start_date_available else "UNAVAILABLE_START_DATE_NOT_HARVESTED",
         "unit_of_analysis": "one unique NCT ID",
+        "study_product_filter": study_product,
+        "drug_candidate_definition": DRUG_CANDIDATE_DEFINITION,
+        "final_intervention_exclusion_rule": "NOT_YET_FIXED_PENDING_COMBINATION_AUDIT",
+        "intervention_type_field_available_in_snapshot": intervention_type_available,
+        "lead_sponsor_class_field_available_in_snapshot": lead_sponsor_class_available,
+        "snapshot_unique_studies": manifest["unique_nct_count"],
+        "intervention_type_audit": intervention_type_audit,
+        "all_vs_drug_diagnostic": all_vs_drug_diagnostic,
         "total_studies": total,
         "known_location_studies": known,
         "unknown_location_studies": counts["UNKNOWN"],
@@ -357,7 +462,9 @@ def write_summary_files(out: Path, summary: dict, cfg: dict, manifest: dict) -> 
     label = "FINAL — COMPLETE SNAPSHOT" if manifest["snapshot_complete"] else "PARTIAL / NON-FINAL SMOKE TEST"
     fmt = lambda value: "N/A" if value is None else f"{value:.2%}"
     lines = [f"# Nexus and Permissible Analysis — Five-Category Model — {label}", "", "## Overall population", "",
-             f"- Analysis mode: **{summary['analysis_mode']}**", f"- Total studies: **{total:,}**", f"- Known-location studies: **{known:,}**", f"- UNKNOWN: **{counts['UNKNOWN']:,} ({fmt(pct(counts['UNKNOWN'], total))} of all studies)**", "",
+             f"- Analysis mode: **{summary['analysis_mode']}**", f"- Study product filter: **{summary['study_product_filter']}**",
+             f"- Drug candidate definition: **{summary['drug_candidate_definition']}**",
+             f"- Total studies: **{total:,}**", f"- Known-location studies: **{known:,}**", f"- UNKNOWN: **{counts['UNKNOWN']:,} ({fmt(pct(counts['UNKNOWN'], total))} of all studies)**", "",
              "## High-level geographic split", "", f"- NO_US / PERMISSIBLE: **{counts['PERMISSIBLE']:,} ({fmt(pct(counts['PERMISSIBLE'], total))} of all; {fmt(pct(counts['PERMISSIBLE'], known))} of known-location)**",
              f"- HAS_US: **{has_us_count:,} ({fmt(pct(has_us_count, total))} of all; {fmt(pct(has_us_count, known))} of known-location)**", "",
              "## Breakdown of HAS_US studies", "",
@@ -397,6 +504,10 @@ def write_summary_files(out: Path, summary: dict, cfg: dict, manifest: dict) -> 
                     f"| {cohort} | {bucket} | {bucket_item['count']:,} | "
                     f"{fmt(bucket_item['percentage_cohort'])} | {fmt(bucket_item['percentage_known_locations'])} |"
                 )
+            lines.append(
+                f"| {cohort} | HAS_US | {item['has_us']['count']:,} | "
+                f"{fmt(item['has_us']['percentage_cohort'])} | {fmt(item['has_us']['percentage_known_locations'])} |"
+            )
         lines += ["", "### Direct Recent 3Y vs 4–6 Years Ago comparison", "",
                   "| Metric | Recent 3Y | 4–6 Years Ago | Change | Change unit |",
                   "|---|---:|---:|---:|---|"]
@@ -410,6 +521,37 @@ def write_summary_files(out: Path, summary: dict, cfg: dict, manifest: dict) -> 
                 f"{'percentage points' if is_percentage else 'count'} |"
             )
         lines += ["", "Registered Start Date is a registry field, not confirmed first-participant enrollment. Period comparisons are descriptive and do not imply causation.", ""]
+    audit = summary["intervention_type_audit"]
+    if audit is not None:
+        lines += ["## Industry Drug-containing intervention-type audit", "",
+                  f"- Lead Sponsor filter: **{audit['lead_sponsor_filter']}**",
+                  f"- Total Industry studies: **{audit['total_industry_studies']:,}**",
+                  f"- Industry Drug-containing studies: **{audit['industry_drug_containing_studies']:,}**",
+                  f"- Industry studies not containing DRUG: **{audit['industry_not_drug_containing_studies']:,}**",
+                  f"- Industry studies with missing intervention type: **{audit['industry_missing_intervention_type']:,}**",
+                  f"- Device-involved Industry Drug studies: **{audit['device_involved_drug_studies']:,}**", "",
+                  "| Intervention Type Combination | Unique Study Count | % of Industry Drug-containing Studies |",
+                  "|---|---:|---:|"]
+        for row in audit["combination_counts"]:
+            lines.append(f"| {row['combination']} | {row['unique_study_count']:,} | {fmt(row['percentage_industry_drug_containing'])} |")
+        highlight_labels = {
+            "drug_only": "DRUG only", "drug_other": "DRUG + OTHER", "drug_device": "DRUG + DEVICE",
+            "drug_procedure": "DRUG + PROCEDURE", "drug_behavioral": "DRUG + BEHAVIORAL",
+            "drug_dietary_supplement": "DRUG + DIETARY_SUPPLEMENT",
+            "other_observed_combinations_containing_drug": "Other observed combinations containing DRUG",
+        }
+        lines += ["", "### Highlighted combination counts", "", "| Category | Unique Study Count |", "|---|---:|"]
+        for key, label_text in highlight_labels.items():
+            lines.append(f"| {label_text} | {audit['highlighted_combination_counts'][key]:,} |")
+        lines += ["", "The final exclusion rule for non-drug intervention combinations has NOT yet been fixed. It will be decided after reviewing the actual intervention-type combination distribution.", ""]
+    if summary["all_vs_drug_diagnostic"] is not None:
+        lines += ["## All vs Industry Drug-containing candidate diagnostic comparison", "", "| Metric | All Studies | Industry Drug-containing Candidates |",
+                  "|---|---:|---:|"]
+        for row in summary["all_vs_drug_diagnostic"]:
+            all_value = fmt(row["all_studies"]) if row["value_type"] == "percentage" else f"{row['all_studies']:,}"
+            drug_value = fmt(row["drug_studies"]) if row["value_type"] == "percentage" else f"{row['drug_studies']:,}"
+            lines.append(f"| {row['metric']} | {all_value} | {drug_value} |")
+        lines.append("")
     lines += ["## Definitions and limitations", "",
               "- US_ONLY means the complete unique country set is exactly {United States}.",
               "- US_NON_CHINA_MULTI contains United States plus at least one other non-China country.",
@@ -417,7 +559,7 @@ def write_summary_files(out: Path, summary: dict, cfg: dict, manifest: dict) -> 
               "- PERMISSIBLE has a known country set with no United States; NEXUS and PERMISSIBLE alone do not partition the registry.",
               f"- US definition: {', '.join(cfg['us_countries'])}", f"- China definition: {', '.join(cfg['china_countries'])}",
               "- Unit of analysis: one unique NCT ID", f"- Harvest timestamp: {manifest['harvest_timestamp_utc']}", f"- Analysis timestamp: {summary['analysis_timestamp_utc']}",
-              "- Denominator: all unique accessible API studies only when the snapshot is complete." if manifest["snapshot_complete"] else "- This page-limited snapshot is not the all-study denominator and must not be reported as final.",
+              "- Denominator: unique Industry-sponsored DRUG-containing NCT IDs when study_product_filter is drug; otherwise all unique NCT IDs." if manifest["snapshot_complete"] else "- This page-limited snapshot is not the target denominator and must not be reported as final.",
               "- Location-proxy limitation: registered or planned facilities do not confirm participant nationality or actual country-level enrollment."]
     (out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -449,6 +591,25 @@ def append_values(ws, values, percentage_columns=()):
     ws.append(cells)
 
 
+def add_intervention_type_audit_sheet(wb: Workbook, audit: dict | None) -> None:
+    if audit is None:
+        return
+    ws = wb.create_sheet("Intervention_Type_Audit")
+    prepare_stream_sheet(ws, ["Intervention Type Combination", "Unique Study Count", "% of Industry Drug-containing Studies"], [48, 22, 38])
+    append_values(ws, ["Lead Sponsor filter", audit["lead_sponsor_filter"], None])
+    append_values(ws, ["Total Industry studies", audit["total_industry_studies"], None])
+    append_values(ws, ["Industry Drug-containing studies", audit["industry_drug_containing_studies"], None])
+    append_values(ws, ["Industry studies not containing DRUG", audit["industry_not_drug_containing_studies"], None])
+    append_values(ws, ["Industry studies with missing intervention type", audit["industry_missing_intervention_type"], None])
+    append_values(ws, ["Device-involved Industry Drug studies", audit["device_involved_drug_studies"], None])
+    append_values(ws, ["EXACT OBSERVED COMBINATIONS", None, None])
+    for row in audit["combination_counts"]:
+        append_values(ws, [row["combination"], row["unique_study_count"], row["percentage_industry_drug_containing"]], (3,))
+    append_values(ws, ["HIGHLIGHTED EXACT COMBINATIONS", None, None])
+    for key, count in audit["highlighted_combination_counts"].items():
+        append_values(ws, [key, count, pct(count, audit["industry_drug_containing_studies"])], (3,))
+
+
 def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list[dict], country_rows: list[dict], cfg: dict, manifest: dict, location_rows_per_sheet: int = 500_000):
     if not 1 <= location_rows_per_sheet <= 1_048_575:
         raise ValueError("location_rows_per_sheet must leave room for the Excel header row")
@@ -456,7 +617,9 @@ def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list
     ws = wb.create_sheet("Executive_Summary")
     prepare_stream_sheet(ws, ["Nexus & Permissible Study Location Analysis — Five-Category Model", "Value"], [58, 95])
     append_values(ws, ["Result status", summary["result_status"]])
-    append_values(ws, ["Denominator", "All unique study records accessible through the ClinicalTrials.gov API in this completed snapshot."])
+    append_values(ws, ["Study product filter", summary["study_product_filter"]])
+    append_values(ws, ["Drug candidate definition", summary["drug_candidate_definition"]])
+    append_values(ws, ["Denominator", "Unique Industry-sponsored DRUG-containing NCT IDs." if summary["study_product_filter"] == "drug" else "All unique study records accessible through the ClinicalTrials.gov API in this completed snapshot."])
     append_values(ws, ["Snapshot applicability", "Completed all-study snapshot; primary denominator applies." if summary["snapshot_complete"] else "PARTIAL smoke-test snapshot; the target denominator above is not satisfied and these results are not final."])
     append_values(ws, ["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."])
     append_values(ws, ["OVERALL POPULATION", None])
@@ -484,6 +647,11 @@ def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list
         for bucket in ("NEXUS", "PERMISSIBLE"):
             append_values(ws, [f"{label} {bucket} count", item["buckets"][bucket]["count"]])
             append_values(ws, [f"{label} {bucket} % of cohort", item["buckets"][bucket]["percentage_cohort"]], (2,))
+    if summary["all_vs_drug_diagnostic"] is not None:
+        append_values(ws, ["ALL VS DRUG DIAGNOSTIC", None])
+        for row in summary["all_vs_drug_diagnostic"]:
+            append_values(ws, [f"{row['metric']} — All Studies", row["all_studies"]], (2,) if row["value_type"] == "percentage" else ())
+            append_values(ws, [f"{row['metric']} — Industry Drug-containing Candidates", row["drug_studies"]], (2,) if row["value_type"] == "percentage" else ())
 
     cs = wb.create_sheet("Classification_Summary")
     prepare_stream_sheet(cs, ["bucket", "count", "percentage_total", "percentage_known_locations", "percentage_has_us", "denominator_notes"], [24, 14, 20, 27, 22, 55])
@@ -539,16 +707,18 @@ def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list
         location_sheet = wb.create_sheet("Locations")
         prepare_stream_sheet(location_sheet, LOCATION_FIELDS, [16, 16, 45, 24, 24, 18, 28])
 
+    add_intervention_type_audit_sheet(wb, summary["intervention_type_audit"])
+
     defs = wb.create_sheet("Definitions")
     prepare_stream_sheet(defs, ["Item", "Definition"], [28, 100])
     time_info = summary["time_analysis"]
-    for row in [["Classification model", "Version 2 — five mutually exclusive categories"], ["Unit of analysis", "One unique NCT ID"], ["Temporal field", "ClinicalTrials.gov registered Start Date; not actual participant enrollment date"], ["Reference date", time_info["reference_date"]], ["RECENT_3Y boundaries", f"{time_info['boundaries']['RECENT_3Y']['start_exclusive']} < Start Date <= {time_info['boundaries']['RECENT_3Y']['end_inclusive']}"], ["YEARS_4_TO_6_AGO boundaries", f"{time_info['boundaries']['YEARS_4_TO_6_AGO']['start_exclusive']} < Start Date <= {time_info['boundaries']['YEARS_4_TO_6_AGO']['end_inclusive']}"], ["Partial dates", time_info["partial_date_rule"]], ["TIME_UNKNOWN", "Missing or unparseable Start Date"], ["TIME_AMBIGUOUS", "Partial Start Date interval crosses a time boundary"], ["Time denominator", "All unique NCT IDs whose registered Start Date is assigned unambiguously to the named cohort"], ["UNKNOWN", "No usable registered location-country value"], ["PERMISSIBLE", "At least one usable country and no configured US country value"], ["US_ONLY", "The complete unique country set is exactly the configured US set: United States only"], ["US_NON_CHINA_MULTI", "Contains United States, does not contain China, and contains at least one additional non-US country"], ["NEXUS", "Contains at least one United States location and at least one China location; other countries may also be present"], ["NO_US", "High-level group equal to PERMISSIBLE for known-location studies"], ["HAS_US", "High-level group equal to US_ONLY + US_NON_CHINA_MULTI + NEXUS"], ["US values", ", ".join(cfg["us_countries"])], ["China values", ", ".join(cfg["china_countries"])], ["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."]]:
+    for row in [["Classification model", "Version 2 — five mutually exclusive categories"], ["Unit of analysis", "One unique NCT ID"], ["Study product filter", summary["study_product_filter"]], ["Drug candidate definition", summary["drug_candidate_definition"]], ["Final intervention exclusion rule", summary["final_intervention_exclusion_rule"]], ["Temporal field", "ClinicalTrials.gov registered Start Date; not actual participant enrollment date"], ["Reference date", time_info["reference_date"]], ["RECENT_3Y boundaries", f"{time_info['boundaries']['RECENT_3Y']['start_exclusive']} < Start Date <= {time_info['boundaries']['RECENT_3Y']['end_inclusive']}"], ["YEARS_4_TO_6_AGO boundaries", f"{time_info['boundaries']['YEARS_4_TO_6_AGO']['start_exclusive']} < Start Date <= {time_info['boundaries']['YEARS_4_TO_6_AGO']['end_inclusive']}"], ["Partial dates", time_info["partial_date_rule"]], ["TIME_UNKNOWN", "Missing or unparseable Start Date"], ["TIME_AMBIGUOUS", "Partial Start Date interval crosses a time boundary"], ["Time denominator", "All unique NCT IDs whose registered Start Date is assigned unambiguously to the named cohort after the product filter"], ["UNKNOWN", "No usable registered location-country value"], ["PERMISSIBLE", "At least one usable country and no configured US country value"], ["US_ONLY", "The complete unique country set is exactly the configured US set: United States only"], ["US_NON_CHINA_MULTI", "Contains United States, does not contain China, and contains at least one additional non-US country"], ["NEXUS", "Contains at least one United States location and at least one China location; other countries may also be present"], ["NO_US", "High-level group equal to PERMISSIBLE for known-location studies"], ["HAS_US", "High-level group equal to US_ONLY + US_NON_CHINA_MULTI + NEXUS"], ["US values", ", ".join(cfg["us_countries"])], ["China values", ", ".join(cfg["china_countries"])], ["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."]]:
         append_values(defs, row)
 
     meta = wb.create_sheet("Run_Metadata"); prepare_stream_sheet(meta, ["Key", "Value"], [35, 100])
     for key, value in manifest.items():
         append_values(meta, [key, json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else value])
-    for key in ("run_directory", "analysis_timestamp_utc", "reference_date", "raw_hash_verification", "summary_only", "time_analysis_status"):
+    for key in ("run_directory", "analysis_timestamp_utc", "reference_date", "raw_hash_verification", "summary_only", "time_analysis_status", "study_product_filter", "drug_candidate_definition", "final_intervention_exclusion_rule", "snapshot_unique_studies"):
         append_values(meta, [key, summary[key]])
     wb.save(path)
 
@@ -560,7 +730,9 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
     prepare_stream_sheet(ws, ["Nexus & Permissible Summary-Only Analysis", "Value"], [62, 100])
     append_values(ws, ["Analysis mode", summary["analysis_mode"]])
     append_values(ws, ["Result status", summary["result_status"]])
-    append_values(ws, ["All-study denominator", summary["total_studies"]])
+    append_values(ws, ["Study product filter", summary["study_product_filter"]])
+    append_values(ws, ["Drug candidate definition", summary["drug_candidate_definition"]])
+    append_values(ws, ["Analysis denominator", summary["total_studies"]])
     append_values(ws, ["Known-location denominator", summary["known_location_studies"]])
     for bucket in ("NEXUS", "PERMISSIBLE"):
         append_values(ws, [f"All-time {bucket} count", summary["buckets"][bucket]["count"]])
@@ -576,13 +748,18 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
     for row in summary["time_analysis"]["comparison"]:
         if row["metric"] in {"NEXUS % of all cohort", "PERMISSIBLE % of all cohort"}:
             append_values(ws, [f"{row['metric']} percentage-point change", row["change"]], (2,))
+    if summary["all_vs_drug_diagnostic"] is not None:
+        append_values(ws, ["ALL VS DRUG DIAGNOSTIC", None])
+        for row in summary["all_vs_drug_diagnostic"]:
+            append_values(ws, [f"{row['metric']} — All Studies", row["all_studies"]], (2,) if row["value_type"] == "percentage" else ())
+            append_values(ws, [f"{row['metric']} — Industry Drug-containing Candidates", row["drug_studies"]], (2,) if row["value_type"] == "percentage" else ())
     append_values(ws, ["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."])
 
     classification = wb.create_sheet("Classification_Summary")
     prepare_stream_sheet(classification, ["bucket", "count", "percentage_total", "percentage_known_locations", "percentage_has_us", "denominator notes"], [25, 16, 22, 30, 22, 55])
     for bucket in BUCKETS:
         item = summary["buckets"][bucket]
-        append_values(classification, [bucket, item["count"], item["percentage_total"], item["percentage_known_locations"], item["percentage_has_us"], "Primary denominator: all unique studies in the completed snapshot"], (3, 4, 5))
+        append_values(classification, [bucket, item["count"], item["percentage_total"], item["percentage_known_locations"], item["percentage_has_us"], "Primary denominator: unique studies after applying study_product_filter"], (3, 4, 5))
 
     comparison = wb.create_sheet("Time_Comparison")
     prepare_stream_sheet(comparison, ["Metric", "Recent 3 years", "4–6 years ago", "Change", "Change unit / denominator"], [38, 22, 22, 22, 55])
@@ -602,6 +779,8 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
             total_percentage = 1.0 if denominator else None
             append_values(pivot, [cohort, "% of cohort", *[item["buckets"][b]["percentage_cohort"] for b in pivot_buckets], total_percentage], tuple(range(3, 9)))
 
+    add_intervention_type_audit_sheet(wb, summary["intervention_type_audit"])
+
     definitions = wb.create_sheet("Definitions")
     prepare_stream_sheet(definitions, ["Item", "Definition"], [34, 105])
     time_info = summary["time_analysis"]
@@ -609,11 +788,14 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
         ["Start Date field path", "protocolSection.statusModule.startDateStruct.date"],
         ["Start Date type path", "protocolSection.statusModule.startDateStruct.type"],
         ["Start Date limitation", "Registered Start Date is not confirmed actual first-participant enrollment date"],
+        ["Study product filter", summary["study_product_filter"]],
+        ["Drug candidate definition", summary["drug_candidate_definition"]],
+        ["Final intervention exclusion rule", summary["final_intervention_exclusion_rule"]],
         ["Reference date", summary["reference_date"]],
         ["RECENT_3Y boundaries", f"{time_info['boundaries']['RECENT_3Y']['start_exclusive']} < Start Date <= {time_info['boundaries']['RECENT_3Y']['end_inclusive']}"],
         ["YEARS_4_TO_6_AGO boundaries", f"{time_info['boundaries']['YEARS_4_TO_6_AGO']['start_exclusive']} < Start Date <= {time_info['boundaries']['YEARS_4_TO_6_AGO']['end_inclusive']}"],
         ["Partial dates", time_info["partial_date_rule"]],
-        ["Time denominator", "All unique NCT IDs assigned unambiguously to the named time cohort"],
+        ["Time denominator", "Unique eligible NCT IDs assigned unambiguously to the named time cohort after the product filter"],
         ["UNKNOWN", "No usable registered location-country value"],
         ["PERMISSIBLE", "Known country set with no exact United States"],
         ["US_ONLY", "Complete unique country set is exactly {United States}"],
@@ -635,10 +817,14 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
         "reference_date": summary["reference_date"],
         "page_count": manifest["page_count"],
         "raw_study_count": manifest["raw_study_count"],
-        "unique_nct_count": summary["total_studies"],
+        "unique_nct_count": manifest["unique_nct_count"],
+        "analysis_denominator": summary["total_studies"],
         "raw_hash_verification": summary["raw_hash_verification"],
         "summary_only": True,
         "start_date_field_available_in_snapshot": summary["start_date_field_available_in_snapshot"],
+        "study_product_filter": summary["study_product_filter"],
+        "drug_candidate_definition": summary["drug_candidate_definition"],
+        "final_intervention_exclusion_rule": summary["final_intervention_exclusion_rule"],
     }
     for key, value in values.items():
         append_values(metadata, [key, value])
@@ -658,16 +844,32 @@ def verify_summary_workbook(path: Path, summary: dict) -> None:
         return True
 
     wb = load_workbook(path, data_only=False, read_only=True)
-    expected = ["Executive_Summary", "Classification_Summary", "Time_Comparison", "Time_Location_Pivot", "Definitions", "Run_Metadata"]
+    expected = ["Executive_Summary", "Classification_Summary", "Time_Comparison", "Time_Location_Pivot"]
+    if summary["intervention_type_audit"] is not None:
+        expected.append("Intervention_Type_Audit")
+    expected += ["Definitions", "Run_Metadata"]
     if wb.sheetnames != expected:
         raise AssertionError(f"Unexpected summary-only workbook sheets: {wb.sheetnames}")
-    executive = {row[0].value: row[1].value for row in wb["Executive_Summary"].iter_rows(min_row=2)}
-    if executive.get("All-study denominator") != summary["total_studies"]:
+    executive = {row[0].value: row[1].value for row in wb["Executive_Summary"].iter_rows(min_row=2) if len(row) >= 2}
+    if executive.get("Analysis denominator") != summary["total_studies"]:
         raise AssertionError("Summary Excel total does not match summary.json")
     if executive.get("Known-location denominator") != summary["known_location_studies"]:
         raise AssertionError("Summary Excel known-location count does not match summary.json")
     if executive.get("Reference date") != summary["reference_date"]:
         raise AssertionError("Summary Excel reference date does not match summary.json")
+    if executive.get("Study product filter") != summary["study_product_filter"]:
+        raise AssertionError("Summary Excel product filter does not match summary.json")
+    if summary["intervention_type_audit"] is not None:
+        audit_rows = list(wb["Intervention_Type_Audit"].iter_rows(min_row=2, values_only=True))
+        exact_rows = {row[0]: row[1:] for row in audit_rows if row and row[0] not in {
+            "Lead Sponsor filter", "Total Industry studies", "Industry Drug-containing studies",
+            "Industry studies not containing DRUG", "Industry studies with missing intervention type",
+            "Device-involved Industry Drug studies", "EXACT OBSERVED COMBINATIONS", "HIGHLIGHTED EXACT COMBINATIONS",
+        }}
+        for row in summary["intervention_type_audit"]["combination_counts"]:
+            actual = exact_rows.get(row["combination"])
+            if actual is None or not same_values(actual[:2], (row["unique_study_count"], row["percentage_industry_drug_containing"])):
+                raise AssertionError(f"Summary Excel intervention combination mismatch: {row['combination']}")
 
     classification = {row[0]: row[1:] for row in wb["Classification_Summary"].iter_rows(min_row=2, values_only=True)}
     for bucket in BUCKETS:
@@ -716,9 +918,13 @@ def verify_summary_workbook(path: Path, summary: dict) -> None:
         "harvest_timestamp_utc": summary["harvest_timestamp_utc"],
         "analysis_timestamp_utc": summary["analysis_timestamp_utc"],
         "reference_date": summary["reference_date"],
-        "unique_nct_count": summary["total_studies"],
+        "unique_nct_count": summary["snapshot_unique_studies"],
+        "analysis_denominator": summary["total_studies"],
         "raw_hash_verification": summary["raw_hash_verification"],
         "summary_only": True,
+        "study_product_filter": summary["study_product_filter"],
+        "drug_candidate_definition": summary["drug_candidate_definition"],
+        "final_intervention_exclusion_rule": summary["final_intervention_exclusion_rule"],
     }
     for key, expected_value in expected_metadata.items():
         if metadata.get(key) != expected_value:
@@ -736,12 +942,23 @@ def verify_summary_text_outputs(out: Path, summary: dict) -> None:
     markdown = (out / "summary.md").read_text(encoding="utf-8")
     required_fragments = [
         f"Analysis mode: **{summary['analysis_mode']}**",
+        f"Study product filter: **{summary['study_product_filter']}**",
+        f"Drug candidate definition: **{summary['drug_candidate_definition']}**",
         f"Total studies: **{summary['total_studies']:,}**",
         f"Known-location studies: **{summary['known_location_studies']:,}**",
         f"Reference date: **{summary['reference_date']}**" if summary["time_analysis_status"] == "AVAILABLE" else "**UNAVAILABLE:**",
     ]
     for bucket in BUCKETS:
         required_fragments.append(f"{bucket}: **{summary['buckets'][bucket]['count']:,}")
+    audit = summary["intervention_type_audit"]
+    if audit is not None:
+        required_fragments.extend([
+            f"Total Industry studies: **{audit['total_industry_studies']:,}**",
+            f"Industry Drug-containing studies: **{audit['industry_drug_containing_studies']:,}**",
+            f"Device-involved Industry Drug studies: **{audit['device_involved_drug_studies']:,}**",
+        ])
+        for row in audit["combination_counts"]:
+            required_fragments.append(f"| {row['combination']} | {row['unique_study_count']:,} |")
     if summary["time_analysis_status"] == "AVAILABLE":
         fmt = lambda value: "N/A" if value is None else f"{value:.2%}"
         for cohort in TIME_COHORTS:
@@ -801,6 +1018,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-name", default="out_v2", help="Versioned output directory name under the selected run")
     parser.add_argument("--reference-date", help="ISO date; defaults to manifest harvest date (UTC)")
     parser.add_argument("--summary-only", action="store_true", help="Stream raw pages and write aggregate-only JSON, Markdown, and Excel")
+    parser.add_argument("--study-product", choices=("all", "drug"), default="all",
+                        help="Restrict the denominator to Industry-sponsored studies containing a DRUG intervention")
     args = parser.parse_args(argv)
     cfg = json.loads(args.config.read_text(encoding="utf-8"))
     manifest_path = args.run / "manifest.json"
@@ -815,6 +1034,12 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("complete snapshot manifest must explicitly confirm that no next-page token remains")
     if args.summary_only and not manifest["snapshot_complete"]:
         parser.error("--summary-only requires a complete snapshot; partial smoke snapshots are rejected")
+    requested_fields = {
+        field.strip() for field in manifest.get("request_parameters", {}).get("fields", "").split(",") if field.strip()
+    }
+    candidate_fields_available = {"InterventionType", "LeadSponsorClass"}.issubset(requested_fields)
+    if args.study_product == "drug" and not candidate_fields_available:
+        parser.error("--study-product drug requires InterventionType and LeadSponsorClass in the snapshot manifest; harvest a new snapshot with those structured fields")
     try:
         reference_date = (datetime.strptime(args.reference_date, "%Y-%m-%d").date() if args.reference_date
                           else datetime.fromisoformat(manifest["harvest_timestamp_utc"].replace("Z", "+00:00")).date())
@@ -832,6 +1057,10 @@ def main(argv: list[str] | None = None) -> int:
         seen_nct_ids = set()
         counts = Counter()
         time_bucket_counts = {cohort: Counter() for cohort in TIME_COHORTS}
+        all_time_bucket_counts = {cohort: Counter() for cohort in TIME_COHORTS}
+        drug_time_bucket_counts = {cohort: Counter() for cohort in TIME_COHORTS}
+        intervention_audit_counts = Counter()
+        intervention_combinations = Counter()
         for entry in manifest["files"]:
             path = args.run / entry["path"]
             if not path.is_file() or sha256(path) != entry["sha256"]:
@@ -849,21 +1078,39 @@ def main(argv: list[str] | None = None) -> int:
                     duplicate_ids[nct] += 1
                     continue
                 seen_nct_ids.add(nct)
+                update_intervention_type_audit(intervention_audit_counts, intervention_combinations, study)
+                eligible = product_is_eligible(study, args.study_product)
                 row, _ = extract(study, cfg, reference_date, include_locations=False)
                 validate_trial_row(row, cfg)
-                counts[row["bucket"]] += 1
-                time_bucket_counts[row["time_cohort"]][row["bucket"]] += 1
-        total = len(seen_nct_ids)
+                all_time_bucket_counts[row["time_cohort"]][row["bucket"]] += 1
+                if product_is_eligible(study, "drug"):
+                    drug_time_bucket_counts[row["time_cohort"]][row["bucket"]] += 1
+                if eligible:
+                    counts[row["bucket"]] += 1
+                    time_bucket_counts[row["time_cohort"]][row["bucket"]] += 1
+        snapshot_total = len(seen_nct_ids)
         if raw_count != manifest["raw_study_count"]:
             raise RuntimeError("Raw study count disagrees with manifest")
-        if total != manifest["unique_nct_count"]:
+        if snapshot_total != manifest["unique_nct_count"]:
             raise RuntimeError("Unique NCT count disagrees with manifest")
-        if raw_count - total != manifest.get("duplicate_nct_count", raw_count - total):
+        if raw_count - snapshot_total != manifest.get("duplicate_nct_count", raw_count - snapshot_total):
             raise RuntimeError("Duplicate NCT count disagrees with manifest")
+        total = sum(counts.values())
         time_analysis = build_time_analysis_from_counts(time_bucket_counts, reference_date, total)
+        all_time_analysis = build_time_analysis_from_counts(all_time_bucket_counts, reference_date, snapshot_total)
+        candidate_total = intervention_audit_counts["industry_drug_containing"]
+        drug_time_analysis = (build_time_analysis_from_counts(
+            drug_time_bucket_counts, reference_date, candidate_total
+        ) if candidate_fields_available and candidate_total else None)
+        diagnostic = build_all_vs_drug_diagnostic(all_time_analysis, drug_time_analysis) if drug_time_analysis else None
+        intervention_audit = (build_intervention_type_audit(
+            intervention_audit_counts, intervention_combinations
+        ) if candidate_fields_available else None)
         summary = build_summary(counts=counts, total=total, time_analysis=time_analysis, manifest=manifest, cfg=cfg,
                                 duplicate_ids=duplicate_ids, reference_date=reference_date, run_directory=args.run,
-                                summary_only=True, analysis_timestamp_utc=analysis_timestamp)
+                                summary_only=True, analysis_timestamp_utc=analysis_timestamp,
+                                study_product=args.study_product, intervention_type_audit=intervention_audit,
+                                all_vs_drug_diagnostic=diagnostic)
         out.mkdir(exist_ok=True)
         write_summary_files(out, summary, cfg, manifest)
         workbook_path = out / "nexus_permissible_summary.xlsx"
@@ -901,17 +1148,39 @@ def main(argv: list[str] | None = None) -> int:
     if raw_count - len(studies_by_id) != manifest.get("duplicate_nct_count", raw_count - len(studies_by_id)):
         raise RuntimeError("Duplicate NCT count disagrees with manifest")
     trials, locations = [], []
+    all_time_bucket_counts = {cohort: Counter() for cohort in TIME_COHORTS}
+    drug_time_bucket_counts = {cohort: Counter() for cohort in TIME_COHORTS}
+    intervention_audit_counts = Counter()
+    intervention_combinations = Counter()
     for nct in sorted(studies_by_id):
-        row, locs = extract(studies_by_id[nct], cfg, reference_date)
+        study = studies_by_id[nct]
+        update_intervention_type_audit(intervention_audit_counts, intervention_combinations, study)
+        eligible = product_is_eligible(study, args.study_product)
+        row, locs = extract(study, cfg, reference_date, include_locations=eligible)
         validate_trial_row(row, cfg)
-        trials.append(row)
-        locations.extend(locs)
+        all_time_bucket_counts[row["time_cohort"]][row["bucket"]] += 1
+        if product_is_eligible(study, "drug"):
+            drug_time_bucket_counts[row["time_cohort"]][row["bucket"]] += 1
+        if eligible:
+            trials.append(row)
+            locations.extend(locs)
     counts = Counter(row["bucket"] for row in trials)
     total = len(trials)
     time_analysis = build_time_analysis(trials, reference_date)
+    all_time_analysis = build_time_analysis_from_counts(all_time_bucket_counts, reference_date, len(studies_by_id))
+    candidate_total = intervention_audit_counts["industry_drug_containing"]
+    drug_time_analysis = (build_time_analysis_from_counts(
+        drug_time_bucket_counts, reference_date, candidate_total
+    ) if candidate_fields_available and candidate_total else None)
+    diagnostic = build_all_vs_drug_diagnostic(all_time_analysis, drug_time_analysis) if drug_time_analysis else None
+    intervention_audit = (build_intervention_type_audit(
+        intervention_audit_counts, intervention_combinations
+    ) if candidate_fields_available else None)
     summary = build_summary(counts=counts, total=total, time_analysis=time_analysis, manifest=manifest, cfg=cfg,
                             duplicate_ids=duplicate_ids, reference_date=reference_date, run_directory=args.run,
-                            summary_only=False, analysis_timestamp_utc=analysis_timestamp)
+                            summary_only=False, analysis_timestamp_utc=analysis_timestamp,
+                            study_product=args.study_product, intervention_type_audit=intervention_audit,
+                            all_vs_drug_diagnostic=diagnostic)
     known = summary["known_location_studies"]
     countries_to_ids = defaultdict(set)
     for row in trials:

@@ -68,6 +68,20 @@ It writes only `summary.json`, `summary.md`, and `nexus_permissible_summary.xlsx
 
 This reduces persistent analysis output from hundreds of megabytes to a few kilobytes while preserving the raw snapshot for reproducibility. Standard mode remains available for detailed exports and uses the same geographic classifier, date parser, time-cohort assignment, and aggregate-summary builder.
 
+### Industry Drug-containing candidate audit
+
+New snapshots request only the structured API v2 fields `InterventionType` and `LeadSponsorClass`. Use `--study-product drug` for the candidate population defined as `LeadSponsorClass == INDUSTRY` and at least one registered `InterventionType == DRUG`. The default is `--study-product all`, so existing all-study behavior remains unchanged.
+
+```bash
+python analyze.py \
+  --run runs/run_<completed-timestamp> \
+  --output-name out_time_drug_summary \
+  --summary-only \
+  --study-product drug
+```
+
+The candidate filter is applied after NCT ID deduplication and before the selected time/geographic counters are updated. In `--summary-only` mode, a small counter preserves every exact intervention-type combination observed among Industry Drug-containing studies and produces the `Intervention_Type_Audit` sheet without retaining row-level studies. The final exclusion rule for combinations such as DRUG + DEVICE, DRUG + OTHER, or DRUG + PROCEDURE is intentionally not fixed until the observed distribution is reviewed. A snapshot whose manifest lacks either required field is rejected; missing fields are never inferred.
+
 ## Setup and quick start
 
 ```bash
@@ -101,7 +115,7 @@ Do not cite limited-page output as a final result. It is visibly marked `PARTIAL
 
 ## Workflow
 
-`harvest.py` requests only the required API v2 fields, including registered Start Date and Start Date type, uses configurable page size, timeout, User-Agent, exponential-backoff retries for network errors, HTTP 429 and 5xx responses, and follows every next-page token. Raw page JSON files are written to a timestamped directory. The manifest records parameters, counts, completeness, duplicates, and SHA-256 hashes. Failed harvests receive `HARVEST_FAILED.txt` and are not analyzable as valid snapshots.
+`harvest.py` requests only the required API v2 fields, including registered Start Date, Start Date type, Intervention Type, and Lead Sponsor Class, uses configurable page size, timeout, User-Agent, exponential-backoff retries for network errors, HTTP 429 and 5xx responses, and follows every next-page token. Raw page JSON files are written to a timestamped directory. The manifest records parameters, counts, completeness, duplicates, and SHA-256 hashes. Failed harvests receive `HARVEST_FAILED.txt` and are not analyzable as valid snapshots.
 
 `analyze.py` verifies the manifest, every raw-file hash, raw and unique counts, and then deduplicates by NCT ID (first observed record wins deterministically). It retains study type and status as metadata without filtering. It writes:
 

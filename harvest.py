@@ -16,6 +16,7 @@ from pathlib import Path
 
 FIELDS = ",".join([
     "NCTId", "BriefTitle", "StudyType", "OverallStatus", "StartDate", "StartDateType",
+    "InterventionType", "LeadSponsorClass",
     "LocationFacility", "LocationCity", "LocationState", "LocationZip", "LocationCountry",
 ])
 

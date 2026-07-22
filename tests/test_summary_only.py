@@ -11,7 +11,7 @@ from openpyxl import load_workbook
 from analyze import main
 
 
-def study(nct_id, start_date, countries, start_type="ACTUAL"):
+def study(nct_id, start_date, countries, start_type="ACTUAL", sponsor_class="INDUSTRY", intervention_types=None):
     status = {"overallStatus": "COMPLETED"}
     if start_date is not None:
         status["startDateStruct"] = {"date": start_date, "type": start_type}
@@ -19,6 +19,8 @@ def study(nct_id, start_date, countries, start_type="ACTUAL"):
         "identificationModule": {"nctId": nct_id, "briefTitle": nct_id},
         "designModule": {"studyType": "INTERVENTIONAL"},
         "statusModule": status,
+        "sponsorCollaboratorsModule": {"leadSponsor": {"class": sponsor_class}},
+        "armsInterventionsModule": {"interventions": [{"type": value} for value in (intervention_types or [])]},
         "contactsLocationsModule": {"locations": [{"country": country} for country in countries]},
     }}
 
@@ -29,16 +31,16 @@ def make_run(root: Path, complete=True) -> Path:
     raw.mkdir(parents=True)
     pages = [
         [
-            study("NCT00000001", "2025-01-01", ["United States", "China"]),
-            study("NCT00000002", "2024-02", ["Germany"]),
-            study("NCT00000003", "2022", ["United States"]),
-            study("NCT00000004", "2021-01-01", ["United States", "Canada"]),
+            study("NCT00000001", "2025-01-01", ["United States", "China"], intervention_types=["DRUG"]),
+            study("NCT00000002", "2024-02", ["Germany"], intervention_types=["DEVICE", "DRUG", "DRUG"]),
+            study("NCT00000003", "2022", ["United States"], intervention_types=["OTHER", "DRUG"]),
+            study("NCT00000004", "2021-01-01", ["United States", "Canada"], intervention_types=["DEVICE"]),
         ],
         [
             study("NCT00000005", "2019-01-01", []),
-            study("NCT00000006", "2027-01-01", ["China"]),
-            study("NCT00000007", "2023-07", ["France"]),
-            study("NCT00000001", "2025-01-01", ["Germany"]),
+            study("NCT00000006", "2027-01-01", ["China"], sponsor_class="OTHER", intervention_types=["DRUG"]),
+            study("NCT00000007", "2023-07", ["France"], intervention_types=["PROCEDURE"]),
+            study("NCT00000001", "2025-01-01", ["Germany"], sponsor_class="OTHER", intervention_types=["DRUG"]),
         ],
     ]
     files = []
@@ -49,7 +51,7 @@ def make_run(root: Path, complete=True) -> Path:
     manifest = {
         "schema_version": 1,
         "harvest_timestamp_utc": "2026-07-16T12:00:00+00:00",
-        "request_parameters": {"fields": "NCTId,StartDate,StartDateType,LocationCountry"},
+            "request_parameters": {"fields": "NCTId,StartDate,StartDateType,InterventionType,LeadSponsorClass,LocationCountry"},
         "limit_pages": None if complete else 2,
         "page_count": 2,
         "raw_study_count": 8,
@@ -81,7 +83,7 @@ class SummaryOnlyTests(unittest.TestCase):
             summary_dir = run / "summary"
             self.assertEqual({path.name for path in summary_dir.iterdir()}, {"summary.json", "summary.md", "nexus_permissible_summary.xlsx"})
             wb = load_workbook(summary_dir / "nexus_permissible_summary.xlsx", read_only=True)
-            self.assertEqual(wb.sheetnames, ["Executive_Summary", "Classification_Summary", "Time_Comparison", "Time_Location_Pivot", "Definitions", "Run_Metadata"])
+            self.assertEqual(wb.sheetnames, ["Executive_Summary", "Classification_Summary", "Time_Comparison", "Time_Location_Pivot", "Intervention_Type_Audit", "Definitions", "Run_Metadata"])
             self.assertNotIn("Study_Detail", wb.sheetnames)
             self.assertFalse(any(name.startswith("Locations") for name in wb.sheetnames))
             wb.close()
@@ -92,6 +94,44 @@ class SummaryOnlyTests(unittest.TestCase):
                 self.assertIn(f"| {cohort} | {count:,} |", markdown)
             self.assertIn("| NEXUS % of all cohort |", markdown)
             self.assertIn("| PERMISSIBLE % of known-location |", markdown)
+
+    def test_drug_filter_standard_and_summary_only_aggregate_parity(self):
+        with tempfile.TemporaryDirectory() as td:
+            run = make_run(Path(td))
+            common = ["--run", str(run), "--reference-date", "2026-07-16", "--study-product", "drug"]
+            self.assertEqual(main([*common, "--output-name", "standard_drug"]), 0)
+            self.assertEqual(main([*common, "--output-name", "summary_drug", "--summary-only"]), 0)
+            standard = json.loads((run / "standard_drug" / "summary.json").read_text())
+            summary = json.loads((run / "summary_drug" / "summary.json").read_text())
+            for key in ("total_studies", "known_location_studies", "buckets", "us_presence_groups",
+                        "time_analysis", "intervention_type_audit", "all_vs_drug_diagnostic"):
+                self.assertEqual(standard[key], summary[key], key)
+            self.assertEqual(summary["study_product_filter"], "drug")
+            self.assertEqual(summary["total_studies"], 3)
+            self.assertEqual(summary["intervention_type_audit"]["industry_drug_containing_studies"], 3)
+            self.assertEqual(summary["intervention_type_audit"]["device_involved_drug_studies"], 1)
+            self.assertTrue(summary["reconciliation_checks"]["five_buckets_equal_total"])
+            self.assertTrue(summary["reconciliation_checks"]["all_time_cohorts_equal_total"])
+            self.assertEqual(summary["time_analysis"]["cohorts"]["RECENT_3Y"]["denominator"], 2)
+            self.assertEqual(summary["time_analysis"]["cohorts"]["RECENT_3Y"]["buckets"]["NEXUS"]["count"], 1)
+            self.assertEqual(summary["time_analysis"]["cohorts"]["YEARS_4_TO_6_AGO"]["denominator"], 1)
+            markdown = (run / "summary_drug" / "summary.md").read_text()
+            self.assertIn("Study product filter: **drug**", markdown)
+            self.assertIn("## All vs Industry Drug-containing candidate diagnostic comparison", markdown)
+            self.assertIn("| DRUG + DEVICE | 1 |", markdown)
+            wb = load_workbook(run / "summary_drug" / "nexus_permissible_summary.xlsx", read_only=True)
+            self.assertIn("Intervention_Type_Audit", wb.sheetnames)
+            wb.close()
+
+    def test_drug_filter_rejects_snapshot_without_required_field(self):
+        with tempfile.TemporaryDirectory() as td:
+            run = make_run(Path(td))
+            manifest_path = run / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["request_parameters"]["fields"] = "NCTId,StartDate,LocationCountry"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                main(["--run", str(run), "--output-name", "drug", "--summary-only", "--study-product", "drug"])
 
     def test_summary_only_rejects_hash_mismatch(self):
         with tempfile.TemporaryDirectory() as td:
