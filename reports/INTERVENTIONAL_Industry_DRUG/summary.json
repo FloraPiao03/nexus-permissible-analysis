@@ -1,0 +1,973 @@
+{
+  "result_status": "FINAL_COMPLETE_SNAPSHOT",
+  "snapshot_complete": true,
+  "harvest_timestamp_utc": "2026-07-22T02:25:19.846228+00:00",
+  "analysis_timestamp_utc": "2026-07-22T03:07:20.777498+00:00",
+  "analysis_mode": "SUMMARY_ONLY_STREAMING",
+  "summary_only": true,
+  "run_directory": "/Users/mac/Desktop/pfizerProj/nexus-permissible-analysis/runs/run_20260722T020135Z",
+  "raw_hash_verification": "PASS",
+  "classification_model_version": 2,
+  "reference_date": "2026-07-22",
+  "start_date_field_available_in_snapshot": true,
+  "time_analysis_status": "AVAILABLE",
+  "unit_of_analysis": "one unique NCT ID",
+  "study_product_filter": "drug",
+  "study_type_filter": "interventional",
+  "drug_candidate_definition": "StudyType == INTERVENTIONAL AND LeadSponsorClass == INDUSTRY AND contains at least one InterventionType == DRUG",
+  "final_intervention_exclusion_rule": "NOT_YET_FIXED_PENDING_COMBINATION_AUDIT",
+  "intervention_type_field_available_in_snapshot": true,
+  "lead_sponsor_class_field_available_in_snapshot": true,
+  "snapshot_unique_studies": 594972,
+  "intervention_type_audit": {
+    "lead_sponsor_filter": "INDUSTRY",
+    "study_type_filter": "interventional",
+    "candidate_definition": "StudyType == INTERVENTIONAL AND LeadSponsorClass == INDUSTRY AND contains at least one InterventionType == DRUG",
+    "total_industry_studies": 112203,
+    "industry_drug_containing_studies": 78893,
+    "industry_not_drug_containing_studies": 33310,
+    "industry_missing_intervention_type": 0,
+    "device_involved_drug_studies": 886,
+    "highlighted_combination_counts": {
+      "drug_only": 71337,
+      "drug_other": 3160,
+      "drug_device": 779,
+      "drug_procedure": 414,
+      "drug_behavioral": 99,
+      "drug_dietary_supplement": 138,
+      "other_observed_combinations_containing_drug": 2966
+    },
+    "combination_counts": [
+      {
+        "intervention_types": [
+          "DRUG"
+        ],
+        "combination": "DRUG",
+        "unique_study_count": 71337,
+        "percentage_industry_drug_containing": 0.9042247094165515
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "OTHER"
+        ],
+        "combination": "DRUG + OTHER",
+        "unique_study_count": 3160,
+        "percentage_industry_drug_containing": 0.040054250693977916
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL"
+        ],
+        "combination": "DRUG + BIOLOGICAL",
+        "unique_study_count": 2063,
+        "percentage_industry_drug_containing": 0.026149341513188748
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE"
+        ],
+        "combination": "DRUG + DEVICE",
+        "unique_study_count": 779,
+        "percentage_industry_drug_containing": 0.00987413331981291
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + PROCEDURE",
+        "unique_study_count": 414,
+        "percentage_industry_drug_containing": 0.005247613856742677
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "RADIATION"
+        ],
+        "combination": "DRUG + RADIATION",
+        "unique_study_count": 201,
+        "percentage_industry_drug_containing": 0.002547754553635937
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "COMBINATION_PRODUCT"
+        ],
+        "combination": "DRUG + COMBINATION_PRODUCT",
+        "unique_study_count": 176,
+        "percentage_industry_drug_containing": 0.0022308696589050992
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DIETARY_SUPPLEMENT"
+        ],
+        "combination": "DRUG + DIETARY_SUPPLEMENT",
+        "unique_study_count": 138,
+        "percentage_industry_drug_containing": 0.0017492046189142255
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "OTHER"
+        ],
+        "combination": "DRUG + BIOLOGICAL + OTHER",
+        "unique_study_count": 103,
+        "percentage_industry_drug_containing": 0.0013055657662910524
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL"
+        ],
+        "combination": "DRUG + BEHAVIORAL",
+        "unique_study_count": 99,
+        "percentage_industry_drug_containing": 0.0012548641831341184
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "GENETIC"
+        ],
+        "combination": "DRUG + GENETIC",
+        "unique_study_count": 52,
+        "percentage_industry_drug_containing": 0.000659120581040143
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DIAGNOSTIC_TEST"
+        ],
+        "combination": "DRUG + DIAGNOSTIC_TEST",
+        "unique_study_count": 46,
+        "percentage_industry_drug_containing": 0.0005830682063047419
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "RADIATION"
+        ],
+        "combination": "DRUG + BIOLOGICAL + RADIATION",
+        "unique_study_count": 41,
+        "percentage_industry_drug_containing": 0.0005196912273585743
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE",
+          "OTHER"
+        ],
+        "combination": "DRUG + DEVICE + OTHER",
+        "unique_study_count": 39,
+        "percentage_industry_drug_containing": 0.0004943404357801072
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + BIOLOGICAL + PROCEDURE",
+        "unique_study_count": 31,
+        "percentage_industry_drug_containing": 0.0003929372694662391
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + DEVICE + PROCEDURE",
+        "unique_study_count": 31,
+        "percentage_industry_drug_containing": 0.0003929372694662391
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "OTHER",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + OTHER + PROCEDURE",
+        "unique_study_count": 22,
+        "percentage_industry_drug_containing": 0.0002788587073631374
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "PROCEDURE",
+          "RADIATION"
+        ],
+        "combination": "DRUG + PROCEDURE + RADIATION",
+        "unique_study_count": 19,
+        "percentage_industry_drug_containing": 0.00024083251999543686
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "DEVICE"
+        ],
+        "combination": "DRUG + BIOLOGICAL + DEVICE",
+        "unique_study_count": 13,
+        "percentage_industry_drug_containing": 0.00016478014526003575
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "COMBINATION_PRODUCT",
+          "OTHER"
+        ],
+        "combination": "DRUG + COMBINATION_PRODUCT + OTHER",
+        "unique_study_count": 12,
+        "percentage_industry_drug_containing": 0.00015210474947080222
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DIETARY_SUPPLEMENT",
+          "OTHER"
+        ],
+        "combination": "DRUG + DIETARY_SUPPLEMENT + OTHER",
+        "unique_study_count": 12,
+        "percentage_industry_drug_containing": 0.00015210474947080222
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "GENETIC"
+        ],
+        "combination": "DRUG + BIOLOGICAL + GENETIC",
+        "unique_study_count": 11,
+        "percentage_industry_drug_containing": 0.0001394293536815687
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "COMBINATION_PRODUCT"
+        ],
+        "combination": "DRUG + BIOLOGICAL + COMBINATION_PRODUCT",
+        "unique_study_count": 9,
+        "percentage_industry_drug_containing": 0.00011407856210310167
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "DIETARY_SUPPLEMENT"
+        ],
+        "combination": "DRUG + BIOLOGICAL + DIETARY_SUPPLEMENT",
+        "unique_study_count": 9,
+        "percentage_industry_drug_containing": 0.00011407856210310167
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "OTHER",
+          "RADIATION"
+        ],
+        "combination": "DRUG + OTHER + RADIATION",
+        "unique_study_count": 9,
+        "percentage_industry_drug_containing": 0.00011407856210310167
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "COMBINATION_PRODUCT",
+          "DEVICE"
+        ],
+        "combination": "DRUG + COMBINATION_PRODUCT + DEVICE",
+        "unique_study_count": 8,
+        "percentage_industry_drug_containing": 0.00010140316631386815
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "PROCEDURE",
+          "RADIATION"
+        ],
+        "combination": "DRUG + BIOLOGICAL + PROCEDURE + RADIATION",
+        "unique_study_count": 6,
+        "percentage_industry_drug_containing": 7.605237473540111e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE",
+          "RADIATION"
+        ],
+        "combination": "DRUG + DEVICE + RADIATION",
+        "unique_study_count": 6,
+        "percentage_industry_drug_containing": 7.605237473540111e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + BEHAVIORAL + PROCEDURE",
+        "unique_study_count": 5,
+        "percentage_industry_drug_containing": 6.337697894616759e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DIAGNOSTIC_TEST",
+          "OTHER"
+        ],
+        "combination": "DRUG + DIAGNOSTIC_TEST + OTHER",
+        "unique_study_count": 4,
+        "percentage_industry_drug_containing": 5.070158315693407e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "GENETIC",
+          "OTHER"
+        ],
+        "combination": "DRUG + GENETIC + OTHER",
+        "unique_study_count": 4,
+        "percentage_industry_drug_containing": 5.070158315693407e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL",
+          "DIETARY_SUPPLEMENT"
+        ],
+        "combination": "DRUG + BEHAVIORAL + DIETARY_SUPPLEMENT",
+        "unique_study_count": 3,
+        "percentage_industry_drug_containing": 3.8026187367700556e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "COMBINATION_PRODUCT",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + COMBINATION_PRODUCT + PROCEDURE",
+        "unique_study_count": 3,
+        "percentage_industry_drug_containing": 3.8026187367700556e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DIAGNOSTIC_TEST",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + DIAGNOSTIC_TEST + PROCEDURE",
+        "unique_study_count": 3,
+        "percentage_industry_drug_containing": 3.8026187367700556e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL",
+          "DEVICE"
+        ],
+        "combination": "DRUG + BEHAVIORAL + DEVICE",
+        "unique_study_count": 2,
+        "percentage_industry_drug_containing": 2.5350791578467036e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "COMBINATION_PRODUCT",
+          "OTHER"
+        ],
+        "combination": "DRUG + BIOLOGICAL + COMBINATION_PRODUCT + OTHER",
+        "unique_study_count": 2,
+        "percentage_industry_drug_containing": 2.5350791578467036e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "OTHER",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + BIOLOGICAL + OTHER + PROCEDURE",
+        "unique_study_count": 2,
+        "percentage_industry_drug_containing": 2.5350791578467036e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE",
+          "DIAGNOSTIC_TEST",
+          "OTHER"
+        ],
+        "combination": "DRUG + DEVICE + DIAGNOSTIC_TEST + OTHER",
+        "unique_study_count": 2,
+        "percentage_industry_drug_containing": 2.5350791578467036e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE",
+          "GENETIC"
+        ],
+        "combination": "DRUG + DEVICE + GENETIC",
+        "unique_study_count": 2,
+        "percentage_industry_drug_containing": 2.5350791578467036e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL",
+          "DIAGNOSTIC_TEST"
+        ],
+        "combination": "DRUG + BEHAVIORAL + DIAGNOSTIC_TEST",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL",
+          "DIAGNOSTIC_TEST",
+          "OTHER"
+        ],
+        "combination": "DRUG + BEHAVIORAL + DIAGNOSTIC_TEST + OTHER",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL",
+          "DIAGNOSTIC_TEST",
+          "RADIATION"
+        ],
+        "combination": "DRUG + BEHAVIORAL + DIAGNOSTIC_TEST + RADIATION",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BEHAVIORAL",
+          "OTHER"
+        ],
+        "combination": "DRUG + BEHAVIORAL + OTHER",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "DEVICE",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + BIOLOGICAL + DEVICE + PROCEDURE",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "DIAGNOSTIC_TEST"
+        ],
+        "combination": "DRUG + BIOLOGICAL + DIAGNOSTIC_TEST",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "DIETARY_SUPPLEMENT",
+          "PROCEDURE",
+          "RADIATION"
+        ],
+        "combination": "DRUG + BIOLOGICAL + DIETARY_SUPPLEMENT + PROCEDURE + RADIATION",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "OTHER",
+          "PROCEDURE",
+          "RADIATION"
+        ],
+        "combination": "DRUG + BIOLOGICAL + OTHER + PROCEDURE + RADIATION",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "BIOLOGICAL",
+          "OTHER",
+          "RADIATION"
+        ],
+        "combination": "DRUG + BIOLOGICAL + OTHER + RADIATION",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "COMBINATION_PRODUCT",
+          "DEVICE",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + COMBINATION_PRODUCT + DEVICE + PROCEDURE",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE",
+          "DIAGNOSTIC_TEST"
+        ],
+        "combination": "DRUG + DEVICE + DIAGNOSTIC_TEST",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DEVICE",
+          "DIAGNOSTIC_TEST",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + DEVICE + DIAGNOSTIC_TEST + PROCEDURE",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DIAGNOSTIC_TEST",
+          "OTHER",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + DIAGNOSTIC_TEST + OTHER + PROCEDURE",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "DIETARY_SUPPLEMENT",
+          "OTHER",
+          "PROCEDURE"
+        ],
+        "combination": "DRUG + DIETARY_SUPPLEMENT + OTHER + PROCEDURE",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      },
+      {
+        "intervention_types": [
+          "DRUG",
+          "GENETIC",
+          "RADIATION"
+        ],
+        "combination": "DRUG + GENETIC + RADIATION",
+        "unique_study_count": 1,
+        "percentage_industry_drug_containing": 1.2675395789233518e-05
+      }
+    ]
+  },
+  "all_vs_drug_diagnostic": [
+    {
+      "metric": "Recent 3Y denominator",
+      "all_studies": 90809,
+      "drug_studies": 11242,
+      "value_type": "count"
+    },
+    {
+      "metric": "Recent 3Y Nexus %",
+      "all_studies": 0.008567432743450539,
+      "drug_studies": 0.06297811777263831,
+      "value_type": "percentage"
+    },
+    {
+      "metric": "Recent 3Y Permissible %",
+      "all_studies": 0.626898214934643,
+      "drug_studies": 0.49270592421277354,
+      "value_type": "percentage"
+    },
+    {
+      "metric": "4–6Y denominator",
+      "all_studies": 84461,
+      "drug_studies": 11591,
+      "value_type": "count"
+    },
+    {
+      "metric": "4–6Y Nexus %",
+      "all_studies": 0.007553782219012325,
+      "drug_studies": 0.050470192390647914,
+      "value_type": "percentage"
+    },
+    {
+      "metric": "4–6Y Permissible %",
+      "all_studies": 0.6373474147831544,
+      "drug_studies": 0.47459235613838324,
+      "value_type": "percentage"
+    }
+  ],
+  "total_studies": 78893,
+  "known_location_studies": 70564,
+  "unknown_location_studies": 8329,
+  "buckets": {
+    "NEXUS": {
+      "count": 2130,
+      "percentage_total": 0.026998593031067396,
+      "percentage_known_locations": 0.03018536364151692,
+      "percentage_has_us": 0.05550343964978111
+    },
+    "PERMISSIBLE": {
+      "count": 32188,
+      "percentage_total": 0.4079956396638485,
+      "percentage_known_locations": 0.4561532792925571,
+      "percentage_has_us": null
+    },
+    "US_ONLY": {
+      "count": 21601,
+      "percentage_total": 0.27380122444323324,
+      "percentage_known_locations": 0.3061192676152146,
+      "percentage_has_us": 0.5628778403168647
+    },
+    "US_NON_CHINA_MULTI": {
+      "count": 14645,
+      "percentage_total": 0.18563117133332488,
+      "percentage_known_locations": 0.2075420894507114,
+      "percentage_has_us": 0.3816187200333542
+    },
+    "UNKNOWN": {
+      "count": 8329,
+      "percentage_total": 0.10557337152852597,
+      "percentage_known_locations": null,
+      "percentage_has_us": null
+    }
+  },
+  "us_presence_groups": {
+    "UNKNOWN": {
+      "count": 8329,
+      "percentage_total": 0.10557337152852597,
+      "percentage_known_locations": null
+    },
+    "NO_US": {
+      "count": 32188,
+      "percentage_total": 0.4079956396638485,
+      "percentage_known_locations": 0.4561532792925571
+    },
+    "HAS_US": {
+      "count": 38376,
+      "percentage_total": 0.48643098880762553,
+      "percentage_known_locations": 0.5438467207074429
+    }
+  },
+  "reconciliation_checks": {
+    "five_buckets_equal_total": true,
+    "no_us_plus_has_us_equal_known": true,
+    "us_subcategories_equal_has_us": true,
+    "all_time_cohorts_equal_total": true,
+    "each_time_cohort_geographic_buckets_equal_denominator": true,
+    "primary_time_cohorts_reconcile": true
+  },
+  "secondary_known_location": {
+    "denominator": 70564,
+    "nexus_percentage": 0.03018536364151692,
+    "permissible_percentage": 0.4561532792925571
+  },
+  "definitions": {
+    "us_countries": [
+      "United States"
+    ],
+    "china_countries": [
+      "China"
+    ],
+    "tracked_separately": {
+      "hong_kong": [
+        "Hong Kong"
+      ],
+      "macau": [
+        "Macau",
+        "Macao"
+      ],
+      "taiwan": [
+        "Taiwan"
+      ],
+      "us_territories": [
+        "Puerto Rico",
+        "Guam",
+        "American Samoa",
+        "Northern Mariana Islands",
+        "Virgin Islands (U.S.)"
+      ]
+    }
+  },
+  "duplicate_nct_ids_detected": {},
+  "time_analysis": {
+    "temporal_field": "registered Start Date",
+    "reference_date": "2026-07-22",
+    "boundaries": {
+      "RECENT_3Y": {
+        "start_exclusive": "2023-07-22",
+        "end_inclusive": "2026-07-22"
+      },
+      "YEARS_4_TO_6_AGO": {
+        "start_exclusive": "2020-07-22",
+        "end_inclusive": "2023-07-22"
+      }
+    },
+    "partial_date_rule": "Assign only when the entire possible date interval is contained in one cohort; otherwise TIME_AMBIGUOUS.",
+    "cohort_counts_all_time": {
+      "RECENT_3Y": 11242,
+      "YEARS_4_TO_6_AGO": 11591,
+      "OLDER_THAN_6Y": 54599,
+      "FUTURE": 369,
+      "TIME_UNKNOWN": 979,
+      "TIME_AMBIGUOUS": 113
+    },
+    "time_unknown_count": 979,
+    "time_ambiguous_count": 113,
+    "all_time_cohort_reconciliation_difference": 0,
+    "cohort_geographic_reconciliation_differences": {
+      "RECENT_3Y": 0,
+      "YEARS_4_TO_6_AGO": 0,
+      "OLDER_THAN_6Y": 0,
+      "FUTURE": 0,
+      "TIME_UNKNOWN": 0,
+      "TIME_AMBIGUOUS": 0
+    },
+    "time_location_counts": {
+      "RECENT_3Y": {
+        "NEXUS": 708,
+        "PERMISSIBLE": 5539,
+        "US_ONLY": 2395,
+        "US_NON_CHINA_MULTI": 1725,
+        "UNKNOWN": 875
+      },
+      "YEARS_4_TO_6_AGO": {
+        "NEXUS": 585,
+        "PERMISSIBLE": 5501,
+        "US_ONLY": 2774,
+        "US_NON_CHINA_MULTI": 2282,
+        "UNKNOWN": 449
+      },
+      "OLDER_THAN_6Y": {
+        "NEXUS": 826,
+        "PERMISSIBLE": 20822,
+        "US_ONLY": 15847,
+        "US_NON_CHINA_MULTI": 10524,
+        "UNKNOWN": 6580
+      },
+      "FUTURE": {
+        "NEXUS": 9,
+        "PERMISSIBLE": 97,
+        "US_ONLY": 46,
+        "US_NON_CHINA_MULTI": 28,
+        "UNKNOWN": 189
+      },
+      "TIME_UNKNOWN": {
+        "NEXUS": 2,
+        "PERMISSIBLE": 173,
+        "US_ONLY": 519,
+        "US_NON_CHINA_MULTI": 78,
+        "UNKNOWN": 207
+      },
+      "TIME_AMBIGUOUS": {
+        "NEXUS": 0,
+        "PERMISSIBLE": 56,
+        "US_ONLY": 20,
+        "US_NON_CHINA_MULTI": 8,
+        "UNKNOWN": 29
+      }
+    },
+    "cohorts": {
+      "RECENT_3Y": {
+        "denominator": 11242,
+        "known_location_denominator": 10367,
+        "buckets": {
+          "NEXUS": {
+            "count": 708,
+            "percentage_cohort": 0.06297811777263831,
+            "percentage_known_locations": 0.06829362399922832
+          },
+          "PERMISSIBLE": {
+            "count": 5539,
+            "percentage_cohort": 0.49270592421277354,
+            "percentage_known_locations": 0.5342915018809684
+          },
+          "US_ONLY": {
+            "count": 2395,
+            "percentage_cohort": 0.213040384273261,
+            "percentage_known_locations": 0.23102151056236134
+          },
+          "US_NON_CHINA_MULTI": {
+            "count": 1725,
+            "percentage_cohort": 0.15344244796299591,
+            "percentage_known_locations": 0.1663933635574419
+          },
+          "UNKNOWN": {
+            "count": 875,
+            "percentage_cohort": 0.07783312577833126,
+            "percentage_known_locations": null
+          }
+        },
+        "has_us": {
+          "count": 4828,
+          "percentage_cohort": 0.4294609500088952,
+          "percentage_known_locations": 0.46570849811903153
+        },
+        "reconciliation_difference": 0
+      },
+      "YEARS_4_TO_6_AGO": {
+        "denominator": 11591,
+        "known_location_denominator": 11142,
+        "buckets": {
+          "NEXUS": {
+            "count": 585,
+            "percentage_cohort": 0.050470192390647914,
+            "percentage_known_locations": 0.05250403877221325
+          },
+          "PERMISSIBLE": {
+            "count": 5501,
+            "percentage_cohort": 0.47459235613838324,
+            "percentage_known_locations": 0.49371746544605993
+          },
+          "US_ONLY": {
+            "count": 2774,
+            "percentage_cohort": 0.23932361314813216,
+            "percentage_known_locations": 0.24896786932328127
+          },
+          "US_NON_CHINA_MULTI": {
+            "count": 2282,
+            "percentage_cohort": 0.19687688724010008,
+            "percentage_known_locations": 0.20481062645844553
+          },
+          "UNKNOWN": {
+            "count": 449,
+            "percentage_cohort": 0.03873695108273661,
+            "percentage_known_locations": null
+          }
+        },
+        "has_us": {
+          "count": 5641,
+          "percentage_cohort": 0.48667069277888014,
+          "percentage_known_locations": 0.50628253455394
+        },
+        "reconciliation_difference": 0
+      }
+    },
+    "comparison": [
+      {
+        "metric": "Cohort denominator",
+        "recent_3y": 11242,
+        "years_4_to_6_ago": 11591,
+        "change": -349,
+        "change_unit": "count"
+      },
+      {
+        "metric": "Known-location denominator",
+        "recent_3y": 10367,
+        "years_4_to_6_ago": 11142,
+        "change": -775,
+        "change_unit": "count"
+      },
+      {
+        "metric": "NEXUS count",
+        "recent_3y": 708,
+        "years_4_to_6_ago": 585,
+        "change": 123,
+        "change_unit": "count"
+      },
+      {
+        "metric": "NEXUS % of all cohort",
+        "recent_3y": 0.06297811777263831,
+        "years_4_to_6_ago": 0.050470192390647914,
+        "change": 0.0125079253819904,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "NEXUS % of known-location",
+        "recent_3y": 0.06829362399922832,
+        "years_4_to_6_ago": 0.05250403877221325,
+        "change": 0.015789585227015075,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "PERMISSIBLE count",
+        "recent_3y": 5539,
+        "years_4_to_6_ago": 5501,
+        "change": 38,
+        "change_unit": "count"
+      },
+      {
+        "metric": "PERMISSIBLE % of all cohort",
+        "recent_3y": 0.49270592421277354,
+        "years_4_to_6_ago": 0.47459235613838324,
+        "change": 0.018113568074390296,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "PERMISSIBLE % of known-location",
+        "recent_3y": 0.5342915018809684,
+        "years_4_to_6_ago": 0.49371746544605993,
+        "change": 0.04057403643490848,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "US_ONLY % of all cohort",
+        "recent_3y": 0.213040384273261,
+        "years_4_to_6_ago": 0.23932361314813216,
+        "change": -0.026283228874871167,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "US_NON_CHINA_MULTI % of all cohort",
+        "recent_3y": 0.15344244796299591,
+        "years_4_to_6_ago": 0.19687688724010008,
+        "change": -0.043434439277104164,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "UNKNOWN % of all cohort",
+        "recent_3y": 0.07783312577833126,
+        "years_4_to_6_ago": 0.03873695108273661,
+        "change": 0.039096174695594656,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "HAS_US count",
+        "recent_3y": 4828,
+        "years_4_to_6_ago": 5641,
+        "change": -813,
+        "change_unit": "count"
+      },
+      {
+        "metric": "HAS_US % of all cohort",
+        "recent_3y": 0.4294609500088952,
+        "years_4_to_6_ago": 0.48667069277888014,
+        "change": -0.05720974276998492,
+        "change_unit": "percentage_points"
+      },
+      {
+        "metric": "HAS_US % of known-location",
+        "recent_3y": 0.46570849811903153,
+        "years_4_to_6_ago": 0.50628253455394,
+        "change": -0.04057403643490848,
+        "change_unit": "percentage_points"
+      }
+    ]
+  },
+  "location_proxy_limitation": "ClinicalTrials.gov locations are registered or planned facilities; they do not confirm participant nationality or actual enrollment by country."
+}
