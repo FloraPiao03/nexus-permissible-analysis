@@ -10,6 +10,17 @@
 - Known-location studies: **70,564**
 - UNKNOWN: **8,329 (10.56% of all studies)**
 
+## Core four-category summary
+
+NON_EXEMPT combines US_ONLY and US_NON_CHINA_MULTI. Percentages use the complete analysis denominator.
+
+| Category | Study count | Percentage |
+|---|---:|---:|
+| NEXUS | 2,130 | 2.70% |
+| PERMISSIBLE | 32,188 | 40.80% |
+| NON_EXEMPT | 36,246 | 45.94% |
+| UNKNOWN | 8,329 | 10.56% |
+
 ## High-level geographic split
 
 - NO_US / PERMISSIBLE: **32,188 (40.80% of all; 45.62% of known-location)**

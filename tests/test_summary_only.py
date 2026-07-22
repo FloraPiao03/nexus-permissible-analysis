@@ -117,6 +117,8 @@ class SummaryOnlyTests(unittest.TestCase):
             self.assertEqual(summary["time_analysis"]["cohorts"]["YEARS_4_TO_6_AGO"]["denominator"], 1)
             markdown = (run / "summary_drug" / "summary.md").read_text()
             self.assertIn("Study product filter: **drug**", markdown)
+            self.assertIn("## Core four-category summary", markdown)
+            self.assertIn("| NON_EXEMPT | 1 | 33.33% |", markdown)
             self.assertIn("## All vs Industry Drug-containing candidate diagnostic comparison", markdown)
             self.assertIn("| DRUG + DEVICE | 1 |", markdown)
             wb = load_workbook(run / "summary_drug" / "nexus_permissible_summary.xlsx", read_only=True)
