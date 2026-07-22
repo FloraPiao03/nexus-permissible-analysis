@@ -123,6 +123,32 @@ class SummaryOnlyTests(unittest.TestCase):
             self.assertIn("Intervention_Type_Audit", wb.sheetnames)
             wb.close()
 
+    def test_interventional_drug_filter_scopes_all_denominators_and_audit(self):
+        with tempfile.TemporaryDirectory() as td:
+            run = make_run(Path(td))
+            page_path = run / "raw" / "page_000001.json"
+            payload = json.loads(page_path.read_text())
+            payload["studies"][1]["protocolSection"]["designModule"]["studyType"] = "OBSERVATIONAL"
+            page_path.write_text(json.dumps(payload), encoding="utf-8")
+            manifest_path = run / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["files"][0]["sha256"] = hashlib.sha256(page_path.read_bytes()).hexdigest()
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            self.assertEqual(main([
+                "--run", str(run), "--output-name", "interventional_drug", "--summary-only",
+                "--reference-date", "2026-07-16", "--study-type", "interventional",
+                "--study-product", "drug",
+            ]), 0)
+            summary = json.loads((run / "interventional_drug" / "summary.json").read_text())
+            self.assertEqual(summary["study_type_filter"], "interventional")
+            self.assertEqual(summary["total_studies"], 2)
+            self.assertEqual(summary["intervention_type_audit"]["total_industry_studies"], 5)
+            self.assertEqual(summary["intervention_type_audit"]["industry_drug_containing_studies"], 2)
+            self.assertEqual(summary["time_analysis"]["cohorts"]["RECENT_3Y"]["denominator"], 1)
+            self.assertEqual(summary["time_analysis"]["cohorts"]["YEARS_4_TO_6_AGO"]["denominator"], 1)
+            self.assertIn("StudyType == INTERVENTIONAL", summary["drug_candidate_definition"])
+
     def test_drug_filter_rejects_snapshot_without_required_field(self):
         with tempfile.TemporaryDirectory() as td:
             run = make_run(Path(td))

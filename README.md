@@ -82,6 +82,17 @@ python analyze.py \
 
 The candidate filter is applied after NCT ID deduplication and before the selected time/geographic counters are updated. In `--summary-only` mode, a small counter preserves every exact intervention-type combination observed among Industry Drug-containing studies and produces the `Intervention_Type_Audit` sheet without retaining row-level studies. The final exclusion rule for combinations such as DRUG + DEVICE, DRUG + OTHER, or DRUG + PROCEDURE is intentionally not fixed until the observed distribution is reviewed. A snapshot whose manifest lacks either required field is rejected; missing fields are never inferred.
 
+Add `--study-type interventional` to restrict every analysis denominator and the intervention-type audit to records whose structured `StudyType` is exactly `INTERVENTIONAL`. The default remains `--study-type all`, preserving prior outputs.
+
+```bash
+.venv/bin/python analyze.py \
+  --run runs/run_<timestamp> \
+  --output-name out_time_interventional_industry_drug_audit \
+  --summary-only \
+  --study-type interventional \
+  --study-product drug
+```
+
 ## Setup and quick start
 
 ```bash

@@ -83,6 +83,12 @@ class ClassificationTests(unittest.TestCase):
             self.assertEqual(kind, row["study_type"])
             self.assertEqual("PERMISSIBLE", row["bucket"])
 
+    def test_interventional_study_type_filter_is_exact(self):
+        self.assertTrue(analyze.study_type_is_eligible(study("NCT1", study_type="INTERVENTIONAL"), "interventional"))
+        self.assertFalse(analyze.study_type_is_eligible(study("NCT2", study_type="OBSERVATIONAL"), "interventional"))
+        self.assertFalse(analyze.study_type_is_eligible(study("NCT3", study_type="EXPANDED_ACCESS"), "interventional"))
+        self.assertTrue(analyze.study_type_is_eligible(study("NCT4", study_type="OBSERVATIONAL"), "all"))
+
     def test_duplicate_is_counted_once_by_dedup_contract(self):
         records = [study("NCT00000001", ["China"]), study("NCT00000001", ["United States"])]
         unique = {}
