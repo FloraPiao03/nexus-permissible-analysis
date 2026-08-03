@@ -1,8 +1,9 @@
 import json
+import http.client
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import harvest
 
@@ -16,8 +17,24 @@ class HarvestResumeTests(unittest.TestCase):
         fields = set(harvest.FIELDS.split(","))
         self.assertIn("InterventionType", fields)
         self.assertIn("LeadSponsorClass", fields)
+        self.assertIn("Phase", fields)
         self.assertNotIn("InterventionName", fields)
         self.assertNotIn("LeadSponsorName", fields)
+
+    def test_incomplete_chunked_response_is_retried(self):
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.__exit__.return_value = False
+        with patch("harvest.urllib.request.urlopen", return_value=response), \
+             patch("harvest.json.load", side_effect=[
+                 http.client.IncompleteRead(b"partial", 10),
+                 {"studies": []},
+             ]) as load, patch("harvest.time.sleep"):
+            result = harvest.request_json(
+                "https://example.test", user_agent="test", timeout=1, retries=1, base=0,
+            )
+        self.assertEqual(result, {"studies": []})
+        self.assertEqual(load.call_count, 2)
 
     def test_resume_preserves_existing_page_and_completes_manifest(self):
         with tempfile.TemporaryDirectory() as td:

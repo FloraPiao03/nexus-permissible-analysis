@@ -18,6 +18,7 @@ The baseline definitions are exactly `United States` and `China`. Puerto Rico an
 
 The five buckets are mutually exclusive and exhaustive. Missing location data is never Permissible. Nexus and Permissible alone do not partition the registry: known-location studies are first split into `NO_US` (= PERMISSIBLE) and `HAS_US`; `HAS_US` is then split into `US_ONLY`, `US_NON_CHINA_MULTI`, and `NEXUS`.
 
+
 ```text
 All studies
 ├── UNKNOWN
@@ -70,7 +71,7 @@ This reduces persistent analysis output from hundreds of megabytes to a few kilo
 
 ### Industry Drug-containing candidate audit
 
-New snapshots request only the structured API v2 fields `InterventionType` and `LeadSponsorClass`. Use `--study-product drug` for the candidate population defined as `LeadSponsorClass == INDUSTRY` and at least one registered `InterventionType == DRUG`. The default is `--study-product all`, so existing all-study behavior remains unchanged.
+New snapshots request the structured API v2 fields `InterventionType`, `LeadSponsorClass`, and `Phase`. Use `--study-product drug` for the candidate population defined as `LeadSponsorClass == INDUSTRY` and at least one registered `InterventionType == DRUG`. Use `--study-product drug-only` when the deduplicated intervention-type set must be exactly `{DRUG}`. The default is `--study-product all`, so existing all-study behavior remains unchanged.
 
 ```bash
 python analyze.py \
@@ -91,6 +92,18 @@ Add `--study-type interventional` to restrict every analysis denominator and the
   --summary-only \
   --study-type interventional \
   --study-product drug
+```
+
+Add `--phase-audit` to require a Phase-enabled snapshot and emit two aggregate-only workbook sheets: `Phase_Audit_Summary` and `Phase_By_Intervention`. The audit preserves exact registered phase combinations and also assigns mutually exclusive decision groups (`EARLY_TO_PHASE3_ONLY`, `CONTAINS_PHASE4`, `NA_ONLY`, `MISSING`, and `OTHER_COMBINATION`). It compares all DRUG-containing, DRUG-only, and corresponding no-PHASE4 views without imposing a final innovation filter. `CONTAINS_PHASE4` is a postmarketing proxy, not proof that a study is non-innovative.
+
+```bash
+.venv/bin/python analyze.py \
+  --run runs/run_<phase-enabled-timestamp> \
+  --output-name out_phase_interventional_industry_drug_audit \
+  --summary-only \
+  --study-type interventional \
+  --study-product drug \
+  --phase-audit
 ```
 
 ### Country-participation trend

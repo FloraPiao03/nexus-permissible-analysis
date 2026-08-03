@@ -11,13 +11,14 @@ from openpyxl import load_workbook
 from analyze import main
 
 
-def study(nct_id, start_date, countries, start_type="ACTUAL", sponsor_class="INDUSTRY", intervention_types=None):
+def study(nct_id, start_date, countries, start_type="ACTUAL", sponsor_class="INDUSTRY",
+          intervention_types=None, phases=None):
     status = {"overallStatus": "COMPLETED"}
     if start_date is not None:
         status["startDateStruct"] = {"date": start_date, "type": start_type}
     return {"protocolSection": {
         "identificationModule": {"nctId": nct_id, "briefTitle": nct_id},
-        "designModule": {"studyType": "INTERVENTIONAL"},
+        "designModule": {"studyType": "INTERVENTIONAL", **({"phases": phases} if phases is not None else {})},
         "statusModule": status,
         "sponsorCollaboratorsModule": {"leadSponsor": {"class": sponsor_class}},
         "armsInterventionsModule": {"interventions": [{"type": value} for value in (intervention_types or [])]},
@@ -31,9 +32,9 @@ def make_run(root: Path, complete=True) -> Path:
     raw.mkdir(parents=True)
     pages = [
         [
-            study("NCT00000001", "2025-01-01", ["United States", "China"], intervention_types=["DRUG"]),
-            study("NCT00000002", "2024-02", ["Germany"], intervention_types=["DEVICE", "DRUG", "DRUG"]),
-            study("NCT00000003", "2022", ["United States"], intervention_types=["OTHER", "DRUG"]),
+            study("NCT00000001", "2025-01-01", ["United States", "China"], intervention_types=["DRUG"], phases=["PHASE1"]),
+            study("NCT00000002", "2024-02", ["Germany"], intervention_types=["DEVICE", "DRUG", "DRUG"], phases=["NA"]),
+            study("NCT00000003", "2022", ["United States"], intervention_types=["OTHER", "DRUG"], phases=["PHASE4"]),
             study("NCT00000004", "2021-01-01", ["United States", "Canada"], intervention_types=["DEVICE"]),
         ],
         [
@@ -51,7 +52,7 @@ def make_run(root: Path, complete=True) -> Path:
     manifest = {
         "schema_version": 1,
         "harvest_timestamp_utc": "2026-07-16T12:00:00+00:00",
-            "request_parameters": {"fields": "NCTId,StartDate,StartDateType,InterventionType,LeadSponsorClass,LocationCountry"},
+            "request_parameters": {"fields": "NCTId,StartDate,StartDateType,InterventionType,LeadSponsorClass,Phase,LocationCountry"},
         "limit_pages": None if complete else 2,
         "page_count": 2,
         "raw_study_count": 8,
@@ -83,7 +84,11 @@ class SummaryOnlyTests(unittest.TestCase):
             summary_dir = run / "summary"
             self.assertEqual({path.name for path in summary_dir.iterdir()}, {"summary.json", "summary.md", "nexus_permissible_summary.xlsx"})
             wb = load_workbook(summary_dir / "nexus_permissible_summary.xlsx", read_only=True)
-            self.assertEqual(wb.sheetnames, ["Executive_Summary", "Classification_Summary", "Time_Comparison", "Time_Location_Pivot", "Intervention_Type_Audit", "Definitions", "Run_Metadata"])
+            self.assertEqual(wb.sheetnames, [
+                "Executive_Summary", "Classification_Summary", "Time_Comparison", "Time_Location_Pivot",
+                "Intervention_Type_Audit", "Phase_Audit_Summary", "Phase_By_Intervention",
+                "Definitions", "Run_Metadata",
+            ])
             self.assertNotIn("Study_Detail", wb.sheetnames)
             self.assertFalse(any(name.startswith("Locations") for name in wb.sheetnames))
             wb.close()
@@ -98,13 +103,13 @@ class SummaryOnlyTests(unittest.TestCase):
     def test_drug_filter_standard_and_summary_only_aggregate_parity(self):
         with tempfile.TemporaryDirectory() as td:
             run = make_run(Path(td))
-            common = ["--run", str(run), "--reference-date", "2026-07-16", "--study-product", "drug"]
+            common = ["--run", str(run), "--reference-date", "2026-07-16", "--study-product", "drug", "--phase-audit"]
             self.assertEqual(main([*common, "--output-name", "standard_drug"]), 0)
             self.assertEqual(main([*common, "--output-name", "summary_drug", "--summary-only"]), 0)
             standard = json.loads((run / "standard_drug" / "summary.json").read_text())
             summary = json.loads((run / "summary_drug" / "summary.json").read_text())
             for key in ("total_studies", "known_location_studies", "buckets", "us_presence_groups",
-                        "time_analysis", "intervention_type_audit", "all_vs_drug_diagnostic"):
+                        "time_analysis", "intervention_type_audit", "phase_audit", "all_vs_drug_diagnostic"):
                 self.assertEqual(standard[key], summary[key], key)
             self.assertEqual(summary["study_product_filter"], "drug")
             self.assertEqual(summary["total_studies"], 3)
@@ -123,7 +128,25 @@ class SummaryOnlyTests(unittest.TestCase):
             self.assertIn("| DRUG + DEVICE | 1 |", markdown)
             wb = load_workbook(run / "summary_drug" / "nexus_permissible_summary.xlsx", read_only=True)
             self.assertIn("Intervention_Type_Audit", wb.sheetnames)
+            self.assertIn("Phase_Audit_Summary", wb.sheetnames)
+            self.assertIn("Phase_By_Intervention", wb.sheetnames)
             wb.close()
+
+    def test_drug_only_filter_is_reusable_and_keeps_phase_audit_comparator(self):
+        with tempfile.TemporaryDirectory() as td:
+            run = make_run(Path(td))
+            self.assertEqual(main([
+                "--run", str(run), "--output-name", "drug_only", "--summary-only",
+                "--reference-date", "2026-07-16", "--study-type", "interventional",
+                "--study-product", "drug-only", "--phase-audit",
+            ]), 0)
+            summary = json.loads((run / "drug_only" / "summary.json").read_text())
+            self.assertEqual(summary["total_studies"], 1)
+            self.assertEqual(summary["study_product_filter"], "drug-only")
+            self.assertIn("exact InterventionType set == {DRUG}", summary["drug_candidate_definition"])
+            self.assertEqual(summary["phase_audit"]["candidate_total"], 3)
+            self.assertEqual(summary["phase_audit"]["decision_diagnostics"]["drug_only"], 1)
+            self.assertIsNone(summary["all_vs_drug_diagnostic"])
 
     def test_interventional_drug_filter_scopes_all_denominators_and_audit(self):
         with tempfile.TemporaryDirectory() as td:
@@ -160,6 +183,16 @@ class SummaryOnlyTests(unittest.TestCase):
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
             with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
                 main(["--run", str(run), "--output-name", "drug", "--summary-only", "--study-product", "drug"])
+
+    def test_phase_audit_rejects_snapshot_without_phase_field(self):
+        with tempfile.TemporaryDirectory() as td:
+            run = make_run(Path(td))
+            manifest_path = run / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["request_parameters"]["fields"] = manifest["request_parameters"]["fields"].replace(",Phase", "")
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                main(["--run", str(run), "--output-name", "phase", "--summary-only", "--phase-audit"])
 
     def test_summary_only_rejects_hash_mismatch(self):
         with tempfile.TemporaryDirectory() as td:

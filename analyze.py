@@ -31,6 +31,15 @@ INTERVENTIONAL_DRUG_CANDIDATE_DEFINITION = (
     "StudyType == INTERVENTIONAL AND LeadSponsorClass == INDUSTRY "
     "AND contains at least one InterventionType == DRUG"
 )
+DRUG_ONLY_DEFINITION = "LeadSponsorClass == INDUSTRY AND exact InterventionType set == {DRUG}"
+INTERVENTIONAL_DRUG_ONLY_DEFINITION = (
+    "StudyType == INTERVENTIONAL AND LeadSponsorClass == INDUSTRY "
+    "AND exact InterventionType set == {DRUG}"
+)
+PHASE_STAGE_GROUPS = (
+    "EARLY_TO_PHASE3_ONLY", "CONTAINS_PHASE4", "NA_ONLY", "MISSING", "OTHER_COMBINATION",
+)
+PREMARKET_PHASES = {"EARLY_PHASE1", "PHASE1", "PHASE2", "PHASE3"}
 
 
 def sponsor_and_intervention_types(study: dict) -> tuple[str, tuple[str, ...]]:
@@ -49,7 +58,123 @@ def product_is_eligible(study: dict, study_product: str) -> bool:
     if study_product == "all":
         return True
     sponsor_class, intervention_types = sponsor_and_intervention_types(study)
-    return sponsor_class == "INDUSTRY" and "DRUG" in intervention_types
+    if study_product == "drug":
+        return sponsor_class == "INDUSTRY" and "DRUG" in intervention_types
+    if study_product == "drug-only":
+        return sponsor_class == "INDUSTRY" and intervention_types == ("DRUG",)
+    raise ValueError(f"Unsupported study product filter: {study_product}")
+
+
+def product_definition(study_type: str, study_product: str) -> str:
+    if study_product == "drug-only":
+        return INTERVENTIONAL_DRUG_ONLY_DEFINITION if study_type == "interventional" else DRUG_ONLY_DEFINITION
+    if study_product == "drug":
+        return INTERVENTIONAL_DRUG_CANDIDATE_DEFINITION if study_type == "interventional" else DRUG_CANDIDATE_DEFINITION
+    return "No study-product filter"
+
+
+def study_phases(study: dict) -> tuple[str, ...]:
+    values = (study.get("protocolSection", {}).get("designModule", {}) or {}).get("phases") or []
+    if not isinstance(values, list):
+        return ()
+    return tuple(sorted({
+        value.strip().upper() for value in values if isinstance(value, str) and value.strip()
+    }))
+
+
+def phase_stage_group(phases: tuple[str, ...]) -> str:
+    values = set(phases)
+    if not values:
+        return "MISSING"
+    if values == {"NA"}:
+        return "NA_ONLY"
+    if "PHASE4" in values:
+        return "CONTAINS_PHASE4"
+    if values.issubset(PREMARKET_PHASES):
+        return "EARLY_TO_PHASE3_ONLY"
+    return "OTHER_COMBINATION"
+
+
+def update_phase_audit(combinations: Counter, study: dict) -> None:
+    sponsor_class, intervention_types = sponsor_and_intervention_types(study)
+    if sponsor_class == "INDUSTRY" and "DRUG" in intervention_types:
+        combinations[(intervention_types, study_phases(study))] += 1
+
+
+def build_phase_audit(combinations: Counter, study_type: str = "all") -> dict:
+    exact_rows = []
+    group_stage_counts: dict[str, Counter] = defaultdict(Counter)
+    group_totals = Counter()
+    for (intervention_types, phases), count in sorted(
+        combinations.items(), key=lambda item: (-item[1], item[0])
+    ):
+        intervention_label = " + ".join(intervention_types)
+        phase_label = " + ".join(phases) if phases else "MISSING"
+        stage_group = phase_stage_group(phases)
+        exact_rows.append({
+            "intervention_types": list(intervention_types),
+            "intervention_combination": intervention_label,
+            "phases": list(phases),
+            "phase_combination": phase_label,
+            "stage_group": stage_group,
+            "unique_study_count": count,
+        })
+        groups = ["ALL_DRUG_CONTAINING", "DRUG_ONLY" if intervention_types == ("DRUG",) else "DRUG_PLUS_X",
+                  f"COMBINATION: {intervention_label}"]
+        for group in groups:
+            group_stage_counts[group][stage_group] += count
+            group_totals[group] += count
+
+    total = group_totals["ALL_DRUG_CONTAINING"]
+    for row in exact_rows:
+        denominator = group_totals[f"COMBINATION: {row['intervention_combination']}"]
+        row["percentage_within_intervention_combination"] = pct(row["unique_study_count"], denominator)
+        row["percentage_all_drug_containing"] = pct(row["unique_study_count"], total)
+
+    group_order = ["ALL_DRUG_CONTAINING", "DRUG_ONLY", "DRUG_PLUS_X"] + sorted(
+        group for group in group_totals if group.startswith("COMBINATION: ")
+    )
+    summary_rows = []
+    for group in group_order:
+        denominator = group_totals[group]
+        for stage in PHASE_STAGE_GROUPS:
+            count = group_stage_counts[group][stage]
+            summary_rows.append({
+                "intervention_group": group,
+                "stage_group": stage,
+                "unique_study_count": count,
+                "group_denominator": denominator,
+                "percentage_within_intervention_group": pct(count, denominator),
+            })
+        if sum(group_stage_counts[group][stage] for stage in PHASE_STAGE_GROUPS) != denominator:
+            raise AssertionError(f"Phase stage groups do not reconcile for {group}")
+
+    contains_phase4 = group_stage_counts["ALL_DRUG_CONTAINING"]["CONTAINS_PHASE4"]
+    drug_only_total = group_totals["DRUG_ONLY"]
+    drug_only_phase4 = group_stage_counts["DRUG_ONLY"]["CONTAINS_PHASE4"]
+    return {
+        "phase_field_path": "protocolSection.designModule.phases[]",
+        "study_type_filter": study_type,
+        "candidate_definition": product_definition(study_type, "drug"),
+        "stage_group_definitions": {
+            "EARLY_TO_PHASE3_ONLY": "Nonempty phase set containing only EARLY_PHASE1, PHASE1, PHASE2, or PHASE3.",
+            "CONTAINS_PHASE4": "Phase set contains PHASE4; treated as a postmarketing proxy, not proof of non-innovation.",
+            "NA_ONLY": "Exact phase set is {NA}.",
+            "MISSING": "No registered phase value.",
+            "OTHER_COMBINATION": "Any other registered phase combination.",
+        },
+        "candidate_total": total,
+        "decision_diagnostics": {
+            "all_drug_containing": total,
+            "drug_only": drug_only_total,
+            "all_drug_containing_without_phase4": total - contains_phase4,
+            "drug_only_without_phase4": drug_only_total - drug_only_phase4,
+            "all_drug_containing_early_to_phase3_only": group_stage_counts["ALL_DRUG_CONTAINING"]["EARLY_TO_PHASE3_ONLY"],
+            "drug_only_early_to_phase3_only": group_stage_counts["DRUG_ONLY"]["EARLY_TO_PHASE3_ONLY"],
+        },
+        "group_stage_rows": summary_rows,
+        "exact_phase_by_intervention_rows": exact_rows,
+    }
 
 
 def study_type_is_eligible(study: dict, study_type: str) -> bool:
@@ -379,7 +504,8 @@ def validate_trial_row(row: dict, cfg: dict) -> None:
 def build_summary(*, counts: Counter, total: int, time_analysis: dict, manifest: dict, cfg: dict,
                   duplicate_ids: Counter, reference_date: date, run_directory: Path,
                   summary_only: bool, analysis_timestamp_utc: str, study_product: str, study_type: str,
-                  intervention_type_audit: dict | None, all_vs_drug_diagnostic: list[dict] | None) -> dict:
+                  intervention_type_audit: dict | None, phase_audit: dict | None,
+                  phase_audit_requested: bool, all_vs_drug_diagnostic: list[dict] | None) -> dict:
     known = total - counts["UNKNOWN"]
     has_us_count = counts["US_ONLY"] + counts["US_NON_CHINA_MULTI"] + counts["NEXUS"]
     if sum(counts[b] for b in BUCKETS) != total:
@@ -407,6 +533,7 @@ def build_summary(*, counts: Counter, total: int, time_analysis: dict, manifest:
     start_date_available = "StartDate" in requested_fields
     intervention_type_available = "InterventionType" in requested_fields
     lead_sponsor_class_available = "LeadSponsorClass" in requested_fields
+    phase_available = "Phase" in requested_fields
     return {
         "result_status": "FINAL_COMPLETE_SNAPSHOT" if manifest["snapshot_complete"] else "PARTIAL_NON_FINAL_SMOKE_TEST",
         "snapshot_complete": manifest["snapshot_complete"],
@@ -423,14 +550,15 @@ def build_summary(*, counts: Counter, total: int, time_analysis: dict, manifest:
         "unit_of_analysis": "one unique NCT ID",
         "study_product_filter": study_product,
         "study_type_filter": study_type,
-        "drug_candidate_definition": (INTERVENTIONAL_DRUG_CANDIDATE_DEFINITION
-                                      if study_type == "interventional" and study_product == "drug"
-                                      else DRUG_CANDIDATE_DEFINITION),
+        "drug_candidate_definition": product_definition(study_type, study_product),
         "final_intervention_exclusion_rule": "NOT_YET_FIXED_PENDING_COMBINATION_AUDIT",
         "intervention_type_field_available_in_snapshot": intervention_type_available,
         "lead_sponsor_class_field_available_in_snapshot": lead_sponsor_class_available,
+        "phase_field_available_in_snapshot": phase_available,
+        "phase_audit_requested": phase_audit_requested,
         "snapshot_unique_studies": manifest["unique_nct_count"],
         "intervention_type_audit": intervention_type_audit,
+        "phase_audit": phase_audit,
         "all_vs_drug_diagnostic": all_vs_drug_diagnostic,
         "total_studies": total,
         "known_location_studies": known,
@@ -569,6 +697,41 @@ def write_summary_files(out: Path, summary: dict, cfg: dict, manifest: dict) -> 
         for key, label_text in highlight_labels.items():
             lines.append(f"| {label_text} | {audit['highlighted_combination_counts'][key]:,} |")
         lines += ["", "The final exclusion rule for non-drug intervention combinations has NOT yet been fixed. It will be decided after reviewing the actual intervention-type combination distribution.", ""]
+    phase_audit = summary["phase_audit"]
+    if phase_audit is not None:
+        diagnostics = phase_audit["decision_diagnostics"]
+        lines += [
+            "## Phase audit by intervention type", "",
+            "Phase is read only from `protocolSection.designModule.phases[]`. `CONTAINS_PHASE4` is a postmarketing proxy and is not treated as proof that a study is non-innovative.", "",
+            "### Decision diagnostics", "",
+            "| Candidate view | Unique Study Count |", "|---|---:|",
+            f"| All DRUG-containing | {diagnostics['all_drug_containing']:,} |",
+            f"| DRUG only | {diagnostics['drug_only']:,} |",
+            f"| All DRUG-containing without registered PHASE4 | {diagnostics['all_drug_containing_without_phase4']:,} |",
+            f"| DRUG only without registered PHASE4 | {diagnostics['drug_only_without_phase4']:,} |",
+            f"| All DRUG-containing, Early Phase 1 through Phase 3 only | {diagnostics['all_drug_containing_early_to_phase3_only']:,} |",
+            f"| DRUG only, Early Phase 1 through Phase 3 only | {diagnostics['drug_only_early_to_phase3_only']:,} |", "",
+            "### Mutually exclusive phase-stage groups", "",
+            "| Intervention Group | Phase Stage Group | Count | Group Denominator | % Within Intervention Group |",
+            "|---|---|---:|---:|---:|",
+        ]
+        for row in phase_audit["group_stage_rows"]:
+            lines.append(
+                f"| {row['intervention_group']} | {row['stage_group']} | {row['unique_study_count']:,} | "
+                f"{row['group_denominator']:,} | {fmt(row['percentage_within_intervention_group'])} |"
+            )
+        lines += [
+            "", "### Exact phase combination by exact intervention combination", "",
+            "| Intervention Combination | Phase Combination | Stage Group | Count | % Within Intervention Combination | % of All DRUG-containing |",
+            "|---|---|---|---:|---:|---:|",
+        ]
+        for row in phase_audit["exact_phase_by_intervention_rows"]:
+            lines.append(
+                f"| {row['intervention_combination']} | {row['phase_combination']} | {row['stage_group']} | "
+                f"{row['unique_study_count']:,} | {fmt(row['percentage_within_intervention_combination'])} | "
+                f"{fmt(row['percentage_all_drug_containing'])} |"
+            )
+        lines += ["", "No final innovation filter is applied by this audit. DRUG-only and Phase-based views are decision diagnostics.", ""]
     if summary["all_vs_drug_diagnostic"] is not None:
         comparison_population = ("All INTERVENTIONAL Studies" if summary["study_type_filter"] == "interventional"
                                  else "All Studies")
@@ -638,6 +801,40 @@ def add_intervention_type_audit_sheet(wb: Workbook, audit: dict | None) -> None:
         append_values(ws, [key, count, pct(count, audit["industry_drug_containing_studies"])], (3,))
 
 
+def add_phase_audit_sheets(wb: Workbook, audit: dict | None) -> None:
+    if audit is None:
+        return
+    summary = wb.create_sheet("Phase_Audit_Summary")
+    prepare_stream_sheet(
+        summary,
+        ["Intervention Group", "Phase Stage Group", "Unique Study Count", "Group Denominator", "% Within Intervention Group"],
+        [42, 30, 22, 22, 30],
+    )
+    append_values(summary, ["DECISION DIAGNOSTICS", None, None, None, None])
+    for key, count in audit["decision_diagnostics"].items():
+        append_values(summary, [key, None, count, None, None])
+    append_values(summary, ["MUTUALLY EXCLUSIVE STAGE GROUPS", None, None, None, None])
+    for row in audit["group_stage_rows"]:
+        append_values(summary, [
+            row["intervention_group"], row["stage_group"], row["unique_study_count"],
+            row["group_denominator"], row["percentage_within_intervention_group"],
+        ], (5,))
+
+    exact = wb.create_sheet("Phase_By_Intervention")
+    prepare_stream_sheet(
+        exact,
+        ["Intervention Combination", "Phase Combination", "Stage Group", "Unique Study Count",
+         "% Within Intervention Combination", "% of All DRUG-containing"],
+        [46, 32, 28, 22, 34, 30],
+    )
+    for row in audit["exact_phase_by_intervention_rows"]:
+        append_values(exact, [
+            row["intervention_combination"], row["phase_combination"], row["stage_group"],
+            row["unique_study_count"], row["percentage_within_intervention_combination"],
+            row["percentage_all_drug_containing"],
+        ], (5, 6))
+
+
 def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list[dict], country_rows: list[dict], cfg: dict, manifest: dict, location_rows_per_sheet: int = 500_000):
     if not 1 <= location_rows_per_sheet <= 1_048_575:
         raise ValueError("location_rows_per_sheet must leave room for the Excel header row")
@@ -648,7 +845,12 @@ def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list
     append_values(ws, ["Study type filter", summary["study_type_filter"]])
     append_values(ws, ["Study product filter", summary["study_product_filter"]])
     append_values(ws, ["Drug candidate definition", summary["drug_candidate_definition"]])
-    append_values(ws, ["Denominator", "Unique Industry-sponsored DRUG-containing NCT IDs." if summary["study_product_filter"] == "drug" else "All unique study records accessible through the ClinicalTrials.gov API in this completed snapshot."])
+    denominator_text = {
+        "drug": "Unique Industry-sponsored DRUG-containing NCT IDs.",
+        "drug-only": "Unique Industry-sponsored NCT IDs whose exact intervention-type set is {DRUG}.",
+        "all": "All unique study records accessible through the ClinicalTrials.gov API in this completed snapshot.",
+    }[summary["study_product_filter"]]
+    append_values(ws, ["Denominator", denominator_text])
     append_values(ws, ["Snapshot applicability", "Completed all-study snapshot; primary denominator applies." if summary["snapshot_complete"] else "PARTIAL smoke-test snapshot; the target denominator above is not satisfied and these results are not final."])
     append_values(ws, ["Location interpretation", "Registered or planned study facilities, not confirmed participant nationality or actual country-level enrollment."])
     append_values(ws, ["OVERALL POPULATION", None])
@@ -681,6 +883,10 @@ def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list
         for row in summary["all_vs_drug_diagnostic"]:
             append_values(ws, [f"{row['metric']} — All Studies", row["all_studies"]], (2,) if row["value_type"] == "percentage" else ())
             append_values(ws, [f"{row['metric']} — Industry Drug-containing Candidates", row["drug_studies"]], (2,) if row["value_type"] == "percentage" else ())
+    if summary["phase_audit"] is not None:
+        append_values(ws, ["PHASE DECISION DIAGNOSTICS", None])
+        for key, count in summary["phase_audit"]["decision_diagnostics"].items():
+            append_values(ws, [key, count])
 
     cs = wb.create_sheet("Classification_Summary")
     prepare_stream_sheet(cs, ["bucket", "count", "percentage_total", "percentage_known_locations", "percentage_has_us", "denominator_notes"], [24, 14, 20, 27, 22, 55])
@@ -737,6 +943,7 @@ def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list
         prepare_stream_sheet(location_sheet, LOCATION_FIELDS, [16, 16, 45, 24, 24, 18, 28])
 
     add_intervention_type_audit_sheet(wb, summary["intervention_type_audit"])
+    add_phase_audit_sheets(wb, summary["phase_audit"])
 
     defs = wb.create_sheet("Definitions")
     prepare_stream_sheet(defs, ["Item", "Definition"], [28, 100])
@@ -747,7 +954,7 @@ def make_workbook(path: Path, summary: dict, trials: list[dict], locations: list
     meta = wb.create_sheet("Run_Metadata"); prepare_stream_sheet(meta, ["Key", "Value"], [35, 100])
     for key, value in manifest.items():
         append_values(meta, [key, json.dumps(value, ensure_ascii=False) if isinstance(value, (dict, list)) else value])
-    for key in ("run_directory", "analysis_timestamp_utc", "reference_date", "raw_hash_verification", "summary_only", "time_analysis_status", "study_type_filter", "study_product_filter", "drug_candidate_definition", "final_intervention_exclusion_rule", "snapshot_unique_studies"):
+    for key in ("run_directory", "analysis_timestamp_utc", "reference_date", "raw_hash_verification", "summary_only", "time_analysis_status", "study_type_filter", "study_product_filter", "drug_candidate_definition", "final_intervention_exclusion_rule", "phase_field_available_in_snapshot", "phase_audit_requested", "snapshot_unique_studies"):
         append_values(meta, [key, summary[key]])
     wb.save(path)
 
@@ -810,6 +1017,7 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
             append_values(pivot, [cohort, "% of cohort", *[item["buckets"][b]["percentage_cohort"] for b in pivot_buckets], total_percentage], tuple(range(3, 9)))
 
     add_intervention_type_audit_sheet(wb, summary["intervention_type_audit"])
+    add_phase_audit_sheets(wb, summary["phase_audit"])
 
     definitions = wb.create_sheet("Definitions")
     prepare_stream_sheet(definitions, ["Item", "Definition"], [34, 105])
@@ -817,6 +1025,8 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
     rows = [
         ["Start Date field path", "protocolSection.statusModule.startDateStruct.date"],
         ["Start Date type path", "protocolSection.statusModule.startDateStruct.type"],
+        ["Phase field path", "protocolSection.designModule.phases[]"],
+        ["Phase 4 interpretation", "Postmarketing proxy only; not proof that a study is non-innovative"],
         ["Start Date limitation", "Registered Start Date is not confirmed actual first-participant enrollment date"],
         ["Study type filter", summary["study_type_filter"]],
         ["Study product filter", summary["study_product_filter"]],
@@ -853,6 +1063,8 @@ def make_summary_workbook(path: Path, summary: dict, cfg: dict, manifest: dict) 
         "raw_hash_verification": summary["raw_hash_verification"],
         "summary_only": True,
         "start_date_field_available_in_snapshot": summary["start_date_field_available_in_snapshot"],
+        "phase_field_available_in_snapshot": summary["phase_field_available_in_snapshot"],
+        "phase_audit_requested": summary["phase_audit_requested"],
         "study_type_filter": summary["study_type_filter"],
         "study_product_filter": summary["study_product_filter"],
         "drug_candidate_definition": summary["drug_candidate_definition"],
@@ -879,6 +1091,8 @@ def verify_summary_workbook(path: Path, summary: dict) -> None:
     expected = ["Executive_Summary", "Classification_Summary", "Time_Comparison", "Time_Location_Pivot"]
     if summary["intervention_type_audit"] is not None:
         expected.append("Intervention_Type_Audit")
+    if summary["phase_audit"] is not None:
+        expected += ["Phase_Audit_Summary", "Phase_By_Intervention"]
     expected += ["Definitions", "Run_Metadata"]
     if wb.sheetnames != expected:
         raise AssertionError(f"Unexpected summary-only workbook sheets: {wb.sheetnames}")
@@ -904,6 +1118,35 @@ def verify_summary_workbook(path: Path, summary: dict) -> None:
             actual = exact_rows.get(row["combination"])
             if actual is None or not same_values(actual[:2], (row["unique_study_count"], row["percentage_industry_drug_containing"])):
                 raise AssertionError(f"Summary Excel intervention combination mismatch: {row['combination']}")
+    if summary["phase_audit"] is not None:
+        phase_rows = list(wb["Phase_Audit_Summary"].iter_rows(min_row=2, values_only=True))
+        observed_stage_rows = {
+            (row[0], row[1]): row[2:5]
+            for row in phase_rows if len(row) > 1 and row[1] in PHASE_STAGE_GROUPS
+        }
+        for row in summary["phase_audit"]["group_stage_rows"]:
+            actual = observed_stage_rows.get((row["intervention_group"], row["stage_group"]))
+            if actual is None or not same_values(actual, (
+                row["unique_study_count"], row["group_denominator"],
+                row["percentage_within_intervention_group"],
+            )):
+                raise AssertionError(
+                    f"Summary Excel phase stage mismatch: {row['intervention_group']} / {row['stage_group']}"
+                )
+        exact_rows = {
+            (row[0], row[1]): row[2:6]
+            for row in wb["Phase_By_Intervention"].iter_rows(min_row=2, values_only=True)
+        }
+        for row in summary["phase_audit"]["exact_phase_by_intervention_rows"]:
+            actual = exact_rows.get((row["intervention_combination"], row["phase_combination"]))
+            if actual is None or not same_values(actual, (
+                row["stage_group"], row["unique_study_count"],
+                row["percentage_within_intervention_combination"],
+                row["percentage_all_drug_containing"],
+            )):
+                raise AssertionError(
+                    f"Summary Excel exact phase mismatch: {row['intervention_combination']} / {row['phase_combination']}"
+                )
 
     classification = {row[0]: row[1:] for row in wb["Classification_Summary"].iter_rows(min_row=2, values_only=True)}
     for bucket in BUCKETS:
@@ -960,6 +1203,8 @@ def verify_summary_workbook(path: Path, summary: dict) -> None:
         "study_product_filter": summary["study_product_filter"],
         "drug_candidate_definition": summary["drug_candidate_definition"],
         "final_intervention_exclusion_rule": summary["final_intervention_exclusion_rule"],
+        "phase_field_available_in_snapshot": summary["phase_field_available_in_snapshot"],
+        "phase_audit_requested": summary["phase_audit_requested"],
     }
     for key, expected_value in expected_metadata.items():
         if metadata.get(key) != expected_value:
@@ -995,6 +1240,30 @@ def verify_summary_text_outputs(out: Path, summary: dict) -> None:
         ])
         for row in audit["combination_counts"]:
             required_fragments.append(f"| {row['combination']} | {row['unique_study_count']:,} |")
+    phase_audit = summary["phase_audit"]
+    if phase_audit is not None:
+        for key, count in phase_audit["decision_diagnostics"].items():
+            label = {
+                "all_drug_containing": "All DRUG-containing",
+                "drug_only": "DRUG only",
+                "all_drug_containing_without_phase4": "All DRUG-containing without registered PHASE4",
+                "drug_only_without_phase4": "DRUG only without registered PHASE4",
+                "all_drug_containing_early_to_phase3_only": "All DRUG-containing, Early Phase 1 through Phase 3 only",
+                "drug_only_early_to_phase3_only": "DRUG only, Early Phase 1 through Phase 3 only",
+            }[key]
+            required_fragments.append(f"| {label} | {count:,} |")
+        fmt = lambda value: "N/A" if value is None else f"{value:.2%}"
+        for row in phase_audit["group_stage_rows"]:
+            required_fragments.append(
+                f"| {row['intervention_group']} | {row['stage_group']} | {row['unique_study_count']:,} | "
+                f"{row['group_denominator']:,} | {fmt(row['percentage_within_intervention_group'])} |"
+            )
+        for row in phase_audit["exact_phase_by_intervention_rows"]:
+            required_fragments.append(
+                f"| {row['intervention_combination']} | {row['phase_combination']} | {row['stage_group']} | "
+                f"{row['unique_study_count']:,} | {fmt(row['percentage_within_intervention_combination'])} | "
+                f"{fmt(row['percentage_all_drug_containing'])} |"
+            )
     if summary["time_analysis_status"] == "AVAILABLE":
         fmt = lambda value: "N/A" if value is None else f"{value:.2%}"
         for cohort in TIME_COHORTS:
@@ -1056,8 +1325,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--summary-only", action="store_true", help="Stream raw pages and write aggregate-only JSON, Markdown, and Excel")
     parser.add_argument("--study-type", choices=("all", "interventional"), default="all",
                         help="Restrict the denominator to StudyType == INTERVENTIONAL")
-    parser.add_argument("--study-product", choices=("all", "drug"), default="all",
-                        help="Restrict the denominator to Industry-sponsored studies containing a DRUG intervention")
+    parser.add_argument("--study-product", choices=("all", "drug", "drug-only"), default="all",
+                        help="Restrict the denominator to Industry-sponsored DRUG-containing or exact DRUG-only studies")
+    parser.add_argument("--phase-audit", action="store_true",
+                        help="Require Phase in the snapshot and emit Phase-by-intervention decision diagnostics")
     args = parser.parse_args(argv)
     cfg = json.loads(args.config.read_text(encoding="utf-8"))
     manifest_path = args.run / "manifest.json"
@@ -1076,8 +1347,11 @@ def main(argv: list[str] | None = None) -> int:
         field.strip() for field in manifest.get("request_parameters", {}).get("fields", "").split(",") if field.strip()
     }
     candidate_fields_available = {"InterventionType", "LeadSponsorClass"}.issubset(requested_fields)
-    if args.study_product == "drug" and not candidate_fields_available:
+    if args.study_product in {"drug", "drug-only"} and not candidate_fields_available:
         parser.error("--study-product drug requires InterventionType and LeadSponsorClass in the snapshot manifest; harvest a new snapshot with those structured fields")
+    phase_available = "Phase" in requested_fields
+    if args.phase_audit and not phase_available:
+        parser.error("--phase-audit requires Phase in the snapshot manifest; harvest a new snapshot with the Phase field")
     try:
         reference_date = (datetime.strptime(args.reference_date, "%Y-%m-%d").date() if args.reference_date
                           else datetime.fromisoformat(manifest["harvest_timestamp_utc"].replace("Z", "+00:00")).date())
@@ -1099,6 +1373,7 @@ def main(argv: list[str] | None = None) -> int:
         drug_time_bucket_counts = {cohort: Counter() for cohort in TIME_COHORTS}
         intervention_audit_counts = Counter()
         intervention_combinations = Counter()
+        phase_combinations = Counter()
         study_type_total = 0
         for entry in manifest["files"]:
             path = args.run / entry["path"]
@@ -1121,6 +1396,8 @@ def main(argv: list[str] | None = None) -> int:
                 if type_eligible:
                     study_type_total += 1
                     update_intervention_type_audit(intervention_audit_counts, intervention_combinations, study)
+                    if phase_available:
+                        update_phase_audit(phase_combinations, study)
                 eligible = type_eligible and product_is_eligible(study, args.study_product)
                 row, _ = extract(study, cfg, reference_date, include_locations=False)
                 validate_trial_row(row, cfg)
@@ -1145,15 +1422,19 @@ def main(argv: list[str] | None = None) -> int:
         drug_time_analysis = (build_time_analysis_from_counts(
             drug_time_bucket_counts, reference_date, candidate_total
         ) if candidate_fields_available and candidate_total else None)
-        diagnostic = build_all_vs_drug_diagnostic(all_time_analysis, drug_time_analysis) if drug_time_analysis else None
+        diagnostic = (build_all_vs_drug_diagnostic(all_time_analysis, drug_time_analysis)
+                      if drug_time_analysis and args.study_product == "drug" else None)
         intervention_audit = (build_intervention_type_audit(
             intervention_audit_counts, intervention_combinations, args.study_type
         ) if candidate_fields_available else None)
+        phase_audit = (build_phase_audit(phase_combinations, args.study_type)
+                       if candidate_fields_available and phase_available else None)
         summary = build_summary(counts=counts, total=total, time_analysis=time_analysis, manifest=manifest, cfg=cfg,
                                 duplicate_ids=duplicate_ids, reference_date=reference_date, run_directory=args.run,
                                 summary_only=True, analysis_timestamp_utc=analysis_timestamp,
                                 study_product=args.study_product, study_type=args.study_type,
-                                intervention_type_audit=intervention_audit,
+                                intervention_type_audit=intervention_audit, phase_audit=phase_audit,
+                                phase_audit_requested=args.phase_audit,
                                 all_vs_drug_diagnostic=diagnostic)
         out.mkdir(exist_ok=True)
         write_summary_files(out, summary, cfg, manifest)
@@ -1196,6 +1477,7 @@ def main(argv: list[str] | None = None) -> int:
     drug_time_bucket_counts = {cohort: Counter() for cohort in TIME_COHORTS}
     intervention_audit_counts = Counter()
     intervention_combinations = Counter()
+    phase_combinations = Counter()
     study_type_total = 0
     for nct in sorted(studies_by_id):
         study = studies_by_id[nct]
@@ -1203,6 +1485,8 @@ def main(argv: list[str] | None = None) -> int:
         if type_eligible:
             study_type_total += 1
             update_intervention_type_audit(intervention_audit_counts, intervention_combinations, study)
+            if phase_available:
+                update_phase_audit(phase_combinations, study)
         eligible = type_eligible and product_is_eligible(study, args.study_product)
         row, locs = extract(study, cfg, reference_date, include_locations=eligible)
         validate_trial_row(row, cfg)
@@ -1221,15 +1505,19 @@ def main(argv: list[str] | None = None) -> int:
     drug_time_analysis = (build_time_analysis_from_counts(
         drug_time_bucket_counts, reference_date, candidate_total
     ) if candidate_fields_available and candidate_total else None)
-    diagnostic = build_all_vs_drug_diagnostic(all_time_analysis, drug_time_analysis) if drug_time_analysis else None
+    diagnostic = (build_all_vs_drug_diagnostic(all_time_analysis, drug_time_analysis)
+                  if drug_time_analysis and args.study_product == "drug" else None)
     intervention_audit = (build_intervention_type_audit(
         intervention_audit_counts, intervention_combinations, args.study_type
     ) if candidate_fields_available else None)
+    phase_audit = (build_phase_audit(phase_combinations, args.study_type)
+                   if candidate_fields_available and phase_available else None)
     summary = build_summary(counts=counts, total=total, time_analysis=time_analysis, manifest=manifest, cfg=cfg,
                             duplicate_ids=duplicate_ids, reference_date=reference_date, run_directory=args.run,
                             summary_only=False, analysis_timestamp_utc=analysis_timestamp,
                             study_product=args.study_product, study_type=args.study_type,
-                            intervention_type_audit=intervention_audit,
+                            intervention_type_audit=intervention_audit, phase_audit=phase_audit,
+                            phase_audit_requested=args.phase_audit,
                             all_vs_drug_diagnostic=diagnostic)
     known = summary["known_location_studies"]
     countries_to_ids = defaultdict(set)

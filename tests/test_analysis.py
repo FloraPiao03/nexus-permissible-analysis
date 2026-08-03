@@ -9,11 +9,11 @@ CONFIG = json.loads(Path("config.json").read_text())
 
 
 def study(nct, countries=None, study_type="INTERVENTIONAL", include_locations_module=True,
-          sponsor_class=None, intervention_types=None):
+          sponsor_class=None, intervention_types=None, phases=None):
     locations = [{"facility": f"Site {i}", "country": c} for i, c in enumerate(countries or [], 1)]
     protocol = {
         "identificationModule": {"nctId": nct, "briefTitle": nct},
-        "designModule": {"studyType": study_type},
+        "designModule": {"studyType": study_type, **({"phases": phases} if phases is not None else {})},
         "statusModule": {"overallStatus": "COMPLETED"},
     }
     if include_locations_module:
@@ -145,6 +145,42 @@ class ClassificationTests(unittest.TestCase):
                 row, _ = analyze.extract(item, CONFIG, analyze.date(2026, 7, 16))
                 self.assertEqual(row["bucket"], "NEXUS")
                 self.assertEqual(row["time_cohort"], "TIME_UNKNOWN")
+
+    def test_drug_only_filter_requires_exact_deduplicated_type_set(self):
+        exact = study("NCT1", sponsor_class="INDUSTRY", intervention_types=["DRUG", "DRUG"])
+        mixed = study("NCT2", sponsor_class="INDUSTRY", intervention_types=["DRUG", "DEVICE"])
+        wrong_sponsor = study("NCT3", sponsor_class="OTHER", intervention_types=["DRUG"])
+        self.assertTrue(analyze.product_is_eligible(exact, "drug-only"))
+        self.assertFalse(analyze.product_is_eligible(mixed, "drug-only"))
+        self.assertFalse(analyze.product_is_eligible(wrong_sponsor, "drug-only"))
+
+    def test_phase_stage_groups_and_exact_cross_tab_reconcile(self):
+        fixtures = [
+            study("NCT1", sponsor_class="INDUSTRY", intervention_types=["DRUG"], phases=["EARLY_PHASE1"]),
+            study("NCT2", sponsor_class="INDUSTRY", intervention_types=["DRUG"], phases=["PHASE1", "PHASE2"]),
+            study("NCT3", sponsor_class="INDUSTRY", intervention_types=["DRUG"], phases=["PHASE4"]),
+            study("NCT4", sponsor_class="INDUSTRY", intervention_types=["DRUG", "DEVICE"], phases=["NA"]),
+            study("NCT5", sponsor_class="INDUSTRY", intervention_types=["DRUG", "OTHER"], phases=None),
+            study("NCT6", sponsor_class="INDUSTRY", intervention_types=["DRUG", "BIOLOGICAL"], phases=["PHASE2", "PHASE3"]),
+        ]
+        combinations = analyze.Counter()
+        for item in fixtures:
+            analyze.update_phase_audit(combinations, item)
+        audit = analyze.build_phase_audit(combinations, "interventional")
+        self.assertEqual(audit["candidate_total"], 6)
+        self.assertEqual(audit["decision_diagnostics"]["drug_only"], 3)
+        self.assertEqual(audit["decision_diagnostics"]["all_drug_containing_without_phase4"], 5)
+        self.assertEqual(audit["decision_diagnostics"]["drug_only_without_phase4"], 2)
+        rows = {
+            (row["intervention_combination"], row["phase_combination"]): row
+            for row in audit["exact_phase_by_intervention_rows"]
+        }
+        self.assertEqual(rows[("DRUG", "PHASE1 + PHASE2")]["stage_group"], "EARLY_TO_PHASE3_ONLY")
+        self.assertEqual(rows[("DRUG + DEVICE", "NA")]["stage_group"], "NA_ONLY")
+        self.assertEqual(rows[("DRUG + OTHER", "MISSING")]["stage_group"], "MISSING")
+        for group in {row["intervention_group"] for row in audit["group_stage_rows"]}:
+            group_rows = [row for row in audit["group_stage_rows"] if row["intervention_group"] == group]
+            self.assertEqual(sum(row["unique_study_count"] for row in group_rows), group_rows[0]["group_denominator"])
 
     def test_intervention_combination_audit_is_set_based_and_deterministic(self):
         counts = analyze.Counter()

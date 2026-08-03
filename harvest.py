@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import json
 import random
 import sys
@@ -15,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 FIELDS = ",".join([
-    "NCTId", "BriefTitle", "StudyType", "OverallStatus", "StartDate", "StartDateType",
+    "NCTId", "BriefTitle", "StudyType", "Phase", "OverallStatus", "StartDate", "StartDateType",
     "InterventionType", "LeadSponsorClass",
     "LocationFacility", "LocationCity", "LocationState", "LocationZip", "LocationCountry",
 ])
@@ -50,7 +51,7 @@ def request_json(url: str, *, user_agent: str, timeout: float, retries: int, bas
                 raise RuntimeError(f"API request failed with HTTP {exc.code}: {url}") from exc
             retry_after = exc.headers.get("Retry-After")
             delay = float(retry_after) if retry_after and retry_after.isdigit() else base * 2**attempt
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        except (urllib.error.URLError, TimeoutError, OSError, http.client.IncompleteRead) as exc:
             if attempt == retries:
                 raise RuntimeError(f"API request failed after {retries + 1} attempts: {exc}") from exc
             delay = base * 2**attempt
