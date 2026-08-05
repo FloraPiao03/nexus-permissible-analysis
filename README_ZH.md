@@ -135,7 +135,7 @@ AND contains at least one InterventionType == DRUG
   --outdir reports/country_participation_trend
 ```
 
-输出包括轻量年度CSV、首次参与和returning-country CSV、summary-only workbook、Markdown report，以及PNG/SVG趋势图。不会生成study-level export。2000年以前的Start Dates明确标记为回溯登记时期数据；snapshot当年标记为partial year。
+输出包括轻量年度CSV、首次参与和returning-country CSV、summary-only workbook、Markdown report，以及PNG/SVG趋势图。不会生成study-level export。2000年以前的Start Dates明确标记为回溯登记时期数据。表格保留snapshot当年并标记为partial year，三张趋势图则统一截止到最后一个完整Start Year，排除当前未完整年度。
 
 同一分析还使用显式且纳入版本控制的`continent_mapping.json`报告年度大洲参与率。六大洲定义由联合国统计司M49地区派生：Northern America、Central America和Caribbean合并为North America，South America保持独立。
 

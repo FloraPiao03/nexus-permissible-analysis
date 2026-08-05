@@ -116,7 +116,7 @@ Add `--phase-audit` to require a Phase-enabled snapshot and emit two aggregate-o
   --outdir reports/country_participation_trend
 ```
 
-Outputs are lightweight annual, first-participation, and returning-country CSVs; a summary-only workbook and Markdown report; and PNG/SVG trend charts. No study-level export is created. Pre-2000 Start Dates are explicitly labeled as retrospectively registered-period data, and the current snapshot year is labeled partial.
+Outputs are lightweight annual, first-participation, and returning-country CSVs; a summary-only workbook and Markdown report; and PNG/SVG trend charts. No study-level export is created. Pre-2000 Start Dates are explicitly labeled as retrospectively registered-period data. Tables retain the current snapshot year as a labeled partial observation, while all three trend charts end at the latest complete Start Year and exclude the partial current year.
 
 The same analysis also reports annual continent participation rates using the explicit, version-controlled `continent_mapping.json`. The six-continent view is derived from the UN Statistics Division M49 regions: Northern America, Central America, and the Caribbean are grouped as North America, while South America remains separate. A study with registered locations in multiple continents counts once in each participating continent, so continent percentages are non-exclusive and may sum to more than 100%. The primary denominator remains all eligible studies starting in the year, including studies with no usable location country.
 

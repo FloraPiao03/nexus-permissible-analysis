@@ -2,7 +2,8 @@ import unittest
 from pathlib import Path
 
 from country_participation import (
-    aggregate_observations, eligible_observation, load_continent_mapping, parse_start_year,
+    aggregate_observations, completed_chart_rows, eligible_observation, load_continent_mapping,
+    parse_start_year,
 )
 
 
@@ -19,6 +20,13 @@ def study(nct_id, start_date, countries, *, study_type="INTERVENTIONAL",
 
 
 class CountryParticipationTests(unittest.TestCase):
+    def test_completed_chart_rows_excludes_partial_snapshot_year(self):
+        rows = [{"Year": 2024}, {"Year": 2025}, {"Year": 2026}]
+        self.assertEqual(
+            completed_chart_rows(rows, 2025),
+            [{"Year": 2024}, {"Year": 2025}],
+        )
+
     def test_start_year_accepts_supported_precision_and_rejects_invalid_dates(self):
         self.assertEqual(parse_start_year("2024"), 2024)
         self.assertEqual(parse_start_year("2024-02"), 2024)

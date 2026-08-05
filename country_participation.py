@@ -412,9 +412,18 @@ def write_csv(path: Path, rows: list[dict], fieldnames: list[str]) -> None:
         writer.writerows(rows)
 
 
+def completed_chart_rows(rows: list[dict], latest_complete_year: int) -> list[dict]:
+    """Exclude partial/future Start Years from chart inputs."""
+    completed = [row for row in rows if row["Year"] <= latest_complete_year]
+    if not completed:
+        raise ValueError("chart has no completed Start Year observations")
+    return completed
+
+
 def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
+    rows = completed_chart_rows(rows, latest_complete_year)
     width, height = 1600, 1600
-    left, right, top, bottom = 120, 70, 145, 120
+    left, right, top, bottom = 120, 70, 175, 120
     plot_w, plot_h = width - left - right, height - top - bottom
     years = [row["Year"] for row in rows]
     annual = [row["Unique Countries Involved"] for row in rows]
@@ -429,9 +438,10 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}</style>',
-        '<text x="800" y="48" text-anchor="middle" class="title">Annual Geographic Breadth of Industry-Sponsored Drug-Containing Clinical Trials</text>',
-        '<text x="800" y="82" text-anchor="middle" class="subtitle">Interventional studies with Lead Sponsor Class = INDUSTRY and at least one DRUG intervention</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.period{font-size:22px;font-weight:700;fill:#146c94}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}</style>',
+        '<text x="800" y="43" text-anchor="middle" class="title">Annual Geographic Breadth of Industry-Sponsored Drug-Containing Clinical Trials</text>',
+        f'<text x="800" y="77" text-anchor="middle" class="period">Complete Study Start Years: {years[0]}–{years[-1]}</text>',
+        '<text x="800" y="108" text-anchor="middle" class="subtitle">Interventional studies with Lead Sponsor Class = INDUSTRY and at least one DRUG intervention</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
         f'<text x="{(left+x(2000))/2:.1f}" y="{top+25}" text-anchor="middle" class="small">Pre-ClinicalTrials.gov / retrospectively registered period</text>',
     ]
@@ -451,20 +461,19 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<polyline points="{rolling_points}" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>',
         f'<polyline points="{annual_points}" fill="none" stroke="#146c94" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>',
-        f'<line x1="{x(latest_complete_year+1):.1f}" y1="{top}" x2="{x(latest_complete_year+1):.1f}" y2="{top+plot_h}" stroke="#b33a3a" stroke-width="2" stroke-dasharray="5 5"/>',
-        f'<text x="{x(latest_complete_year+1)-8:.1f}" y="{top+plot_h-15}" text-anchor="end" class="small">Current year is partial</text>',
         f'<text x="{left+plot_w/2:.1f}" y="{height-42}" text-anchor="middle" class="axis">Study Start Year</text>',
         f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Number of Unique Countries Involved</text>',
-        f'<line x1="{width-520}" y1="110" x2="{width-465}" y2="110" stroke="#146c94" stroke-width="5"/><text x="{width-450}" y="115" class="legend">Annual active countries</text>',
-        f'<line x1="{width-270}" y1="110" x2="{width-215}" y2="110" stroke="#9aa7b2" stroke-width="4"/><text x="{width-200}" y="115" class="legend">3-year rolling</text>',
+        f'<line x1="{width-520}" y1="140" x2="{width-465}" y2="140" stroke="#146c94" stroke-width="5"/><text x="{width-450}" y="145" class="legend">Annual active countries</text>',
+        f'<line x1="{width-270}" y1="140" x2="{width-215}" y2="140" stroke="#9aa7b2" stroke-width="4"/><text x="{width-200}" y="145" class="legend">3-year rolling</text>',
         '</svg>',
     ]
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
 
 def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
+    rows = completed_chart_rows(rows, latest_complete_year)
     width, height = 1600, 1600
-    left, right, top, bottom = 120, 70, 180, 120
+    left, right, top, bottom = 120, 70, 220, 120
     plot_w, plot_h = width - left - right, height - top - bottom
     years = sorted({row["Year"] for row in rows})
     by_continent = {
@@ -491,9 +500,10 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:14px}</style>',
-        '<text x="800" y="48" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Drug-Containing Clinical Trials</text>',
-        '<text x="800" y="82" text-anchor="middle" class="subtitle">Share of all eligible studies with at least one registered location in each continent; shares are non-exclusive</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.period{font-size:22px;font-weight:700;fill:#146c94}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:14px}</style>',
+        '<text x="800" y="43" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Drug-Containing Clinical Trials</text>',
+        f'<text x="800" y="77" text-anchor="middle" class="period">Complete Study Start Years: {years[0]}–{years[-1]}</text>',
+        '<text x="800" y="108" text-anchor="middle" class="subtitle">Share of all eligible studies with a registered location in each continent; non-exclusive study-level participation</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
         f'<text x="{(left+x(2000))/2:.1f}" y="{top+25}" text-anchor="middle" class="small">Retrospectively registered period</text>',
     ]
@@ -521,8 +531,6 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
         )
     parts += [
         f'<line x1="{x(2000):.1f}" y1="{top}" x2="{x(2000):.1f}" y2="{top+plot_h}" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>',
-        f'<line x1="{x(latest_complete_year+1):.1f}" y1="{top}" x2="{x(latest_complete_year+1):.1f}" y2="{top+plot_h}" stroke="#b33a3a" stroke-width="2" stroke-dasharray="5 5"/>',
-        f'<text x="{x(latest_complete_year+1)-8:.1f}" y="{top+plot_h-15}" text-anchor="end" class="small">Current year is partial</text>',
         f'<line x1="{left}" y1="{top+plot_h}" x2="{width-right}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<text x="{left+plot_w/2:.1f}" y="{height-42}" text-anchor="middle" class="axis">Study Start Year</text>',
@@ -530,7 +538,7 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
     ]
     for index, continent in enumerate(CONTINENT_ORDER):
         legend_x = 210 + (index % 3) * 430
-        legend_y = 112 + (index // 3) * 34
+        legend_y = 145 + (index // 3) * 34
         parts += [
             f'<line x1="{legend_x}" y1="{legend_y}" x2="{legend_x+55}" y2="{legend_y}" stroke="{colors[continent]}" stroke-width="5"/>',
             f'<text x="{legend_x+70}" y="{legend_y+5}" class="legend">{continent}</text>',
@@ -540,8 +548,9 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
 
 
 def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
+    rows = completed_chart_rows(rows, latest_complete_year)
     width, height = 1600, 1600
-    left, right, top, bottom = 120, 70, 155, 120
+    left, right, top, bottom = 120, 70, 185, 120
     plot_w, plot_h = width - left - right, height - top - bottom
     years = [row["Year"] for row in rows]
     counts = [row["NEXUS Studies"] for row in rows]
@@ -556,9 +565,10 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}</style>',
-        '<text x="800" y="48" text-anchor="middle" class="title">Annual NEXUS Studies by Registered Study Start Year</text>',
-        '<text x="800" y="82" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China registered locations</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.period{font-size:22px;font-weight:700;fill:#7b2cbf}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}</style>',
+        '<text x="800" y="43" text-anchor="middle" class="title">Annual NEXUS Studies by Registered Study Start Year</text>',
+        f'<text x="800" y="77" text-anchor="middle" class="period">Complete Study Start Years: {years[0]}–{years[-1]}</text>',
+        '<text x="800" y="108" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
         f'<text x="{(left+x(2000))/2:.1f}" y="{top+25}" text-anchor="middle" class="small">Retrospectively registered period</text>',
     ]
@@ -577,16 +587,14 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
             ]
     parts += [
         f'<line x1="{x(2000):.1f}" y1="{top}" x2="{x(2000):.1f}" y2="{top+plot_h}" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>',
-        f'<line x1="{x(latest_complete_year+1):.1f}" y1="{top}" x2="{x(latest_complete_year+1):.1f}" y2="{top+plot_h}" stroke="#b33a3a" stroke-width="2" stroke-dasharray="5 5"/>',
         f'<polyline points="{moving_points}" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>',
         f'<polyline points="{count_points}" fill="none" stroke="#7b2cbf" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>',
-        f'<text x="{x(latest_complete_year+1)-8:.1f}" y="{top+plot_h-15}" text-anchor="end" class="small">Current year is partial</text>',
         f'<line x1="{left}" y1="{top+plot_h}" x2="{width-right}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<text x="{left+plot_w/2:.1f}" y="{height-42}" text-anchor="middle" class="axis">Study Start Year</text>',
         f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Number of NEXUS Studies</text>',
-        f'<line x1="{width-580}" y1="112" x2="{width-525}" y2="112" stroke="#7b2cbf" stroke-width="5"/><text x="{width-510}" y="117" class="legend">Annual NEXUS studies</text>',
-        f'<line x1="{width-300}" y1="112" x2="{width-245}" y2="112" stroke="#9aa7b2" stroke-width="4"/><text x="{width-230}" y="117" class="legend">3-year moving average</text>',
+        f'<line x1="{width-580}" y1="145" x2="{width-525}" y2="145" stroke="#7b2cbf" stroke-width="5"/><text x="{width-510}" y="150" class="legend">Annual NEXUS studies</text>',
+        f'<line x1="{width-300}" y1="145" x2="{width-245}" y2="145" stroke="#9aa7b2" stroke-width="4"/><text x="{width-230}" y="150" class="legend">3-year moving average</text>',
         "</svg>",
     ]
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")

@@ -1,65 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1600" viewBox="0 0 1600 1600">
 <rect x="0" y="0" width="1600" height="1600" fill="#ffffff" fill-opacity="1"/>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:14px}</style>
-<text x="800" y="48" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Drug-Containing Clinical Trials</text>
-<text x="800" y="82" text-anchor="middle" class="subtitle">Share of all eligible studies with at least one registered location in each continent; shares are non-exclusive</text>
-<rect x="120" y="180" width="362.6" height="1300" fill="#f3f0e8"/>
-<text x="301.3" y="205" text-anchor="middle" class="small">Retrospectively registered period</text>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.period{font-size:22px;font-weight:700;fill:#146c94}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:14px}</style>
+<text x="800" y="43" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Drug-Containing Clinical Trials</text>
+<text x="800" y="77" text-anchor="middle" class="period">Complete Study Start Years: 1991–2025</text>
+<text x="800" y="108" text-anchor="middle" class="subtitle">Share of all eligible studies with a registered location in each continent; non-exclusive study-level participation</text>
+<rect x="120" y="220" width="373.2" height="1260" fill="#f3f0e8"/>
+<text x="306.6" y="245" text-anchor="middle" class="small">Retrospectively registered period</text>
 <line x1="120" y1="1480.0" x2="1530" y2="1480.0" stroke="#dfe5eb" stroke-width="1"/>
 <text x="102" y="1485.0" text-anchor="end" class="axis">0%</text>
-<line x1="120" y1="1263.3" x2="1530" y2="1263.3" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="1268.3" text-anchor="end" class="axis">10%</text>
-<line x1="120" y1="1046.7" x2="1530" y2="1046.7" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="1051.7" text-anchor="end" class="axis">20%</text>
-<line x1="120" y1="830.0" x2="1530" y2="830.0" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="835.0" text-anchor="end" class="axis">30%</text>
-<line x1="120" y1="613.3" x2="1530" y2="613.3" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="618.3" text-anchor="end" class="axis">40%</text>
-<line x1="120" y1="396.7" x2="1530" y2="396.7" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="401.7" text-anchor="end" class="axis">50%</text>
-<line x1="120" y1="180.0" x2="1530" y2="180.0" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="185.0" text-anchor="end" class="axis">60%</text>
+<line x1="120" y1="1270.0" x2="1530" y2="1270.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="102" y="1275.0" text-anchor="end" class="axis">10%</text>
+<line x1="120" y1="1060.0" x2="1530" y2="1060.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="102" y="1065.0" text-anchor="end" class="axis">20%</text>
+<line x1="120" y1="850.0" x2="1530" y2="850.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="102" y="855.0" text-anchor="end" class="axis">30%</text>
+<line x1="120" y1="640.0" x2="1530" y2="640.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="102" y="645.0" text-anchor="end" class="axis">40%</text>
+<line x1="120" y1="430.0" x2="1530" y2="430.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="102" y="435.0" text-anchor="end" class="axis">50%</text>
+<line x1="120" y1="220.0" x2="1530" y2="220.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="102" y="225.0" text-anchor="end" class="axis">60%</text>
 <line x1="120.0" y1="1480" x2="120.0" y2="1487" stroke="#4d5966"/>
 <text x="120.0" y="1510" text-anchor="middle" class="axis">1991</text>
-<line x1="281.1" y1="1480" x2="281.1" y2="1487" stroke="#4d5966"/>
-<text x="281.1" y="1510" text-anchor="middle" class="axis">1995</text>
-<line x1="482.6" y1="1480" x2="482.6" y2="1487" stroke="#4d5966"/>
-<text x="482.6" y="1510" text-anchor="middle" class="axis">2000</text>
-<line x1="684.0" y1="1480" x2="684.0" y2="1487" stroke="#4d5966"/>
-<text x="684.0" y="1510" text-anchor="middle" class="axis">2005</text>
-<line x1="885.4" y1="1480" x2="885.4" y2="1487" stroke="#4d5966"/>
-<text x="885.4" y="1510" text-anchor="middle" class="axis">2010</text>
-<line x1="1086.9" y1="1480" x2="1086.9" y2="1487" stroke="#4d5966"/>
-<text x="1086.9" y="1510" text-anchor="middle" class="axis">2015</text>
-<line x1="1288.3" y1="1480" x2="1288.3" y2="1487" stroke="#4d5966"/>
-<text x="1288.3" y="1510" text-anchor="middle" class="axis">2020</text>
-<line x1="1489.7" y1="1480" x2="1489.7" y2="1487" stroke="#4d5966"/>
-<text x="1489.7" y="1510" text-anchor="middle" class="axis">2025</text>
+<line x1="285.9" y1="1480" x2="285.9" y2="1487" stroke="#4d5966"/>
+<text x="285.9" y="1510" text-anchor="middle" class="axis">1995</text>
+<line x1="493.2" y1="1480" x2="493.2" y2="1487" stroke="#4d5966"/>
+<text x="493.2" y="1510" text-anchor="middle" class="axis">2000</text>
+<line x1="700.6" y1="1480" x2="700.6" y2="1487" stroke="#4d5966"/>
+<text x="700.6" y="1510" text-anchor="middle" class="axis">2005</text>
+<line x1="907.9" y1="1480" x2="907.9" y2="1487" stroke="#4d5966"/>
+<text x="907.9" y="1510" text-anchor="middle" class="axis">2010</text>
+<line x1="1115.3" y1="1480" x2="1115.3" y2="1487" stroke="#4d5966"/>
+<text x="1115.3" y="1510" text-anchor="middle" class="axis">2015</text>
+<line x1="1322.6" y1="1480" x2="1322.6" y2="1487" stroke="#4d5966"/>
+<text x="1322.6" y="1510" text-anchor="middle" class="axis">2020</text>
 <line x1="1530.0" y1="1480" x2="1530.0" y2="1487" stroke="#4d5966"/>
-<text x="1530.0" y="1510" text-anchor="middle" class="axis">2026</text>
-<polyline points="120.0,1480.0 160.3,1480.0 200.6,1480.0 240.9,1480.0 281.1,1418.1 321.4,1480.0 361.7,1451.5 402.0,1396.7 442.3,1462.2 482.6,1433.0 522.9,1387.1 563.1,1412.5 603.4,1387.1 643.7,1382.2 684.0,1381.8 724.3,1354.7 764.6,1381.0 804.9,1386.0 845.1,1384.9 885.4,1395.2 925.7,1376.2 966.0,1390.9 1006.3,1378.4 1046.6,1396.1 1086.9,1402.7 1127.1,1422.0 1167.4,1411.1 1207.7,1406.9 1248.0,1418.3 1288.3,1422.9 1328.6,1415.7 1368.9,1399.4 1409.1,1414.7 1449.4,1428.5 1489.7,1444.5 1530.0,1459.3" fill="none" stroke="#d55e00" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="120.0,1480.0 160.3,1263.3 200.6,1480.0 240.9,1371.7 281.1,1418.1 321.4,1118.9 361.7,1366.0 402.0,1372.9 442.3,1453.4 482.6,1362.6 522.9,1347.3 563.1,1297.1 603.4,1219.4 643.7,1204.0 684.0,1162.8 724.3,1061.6 764.6,1035.6 804.9,997.3 845.1,960.3 885.4,900.9 925.7,887.3 966.0,837.3 1006.3,858.4 1046.6,861.0 1086.9,877.3 1127.1,822.9 1167.4,717.4 1207.7,672.8 1248.0,617.7 1288.3,546.3 1328.6,479.3 1368.9,503.6 1409.1,380.6 1449.4,394.2 1489.7,374.3 1530.0,557.4" fill="none" stroke="#0072b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="120.0,1480.0 160.3,830.0 200.6,1137.9 240.9,1371.7 281.1,1170.5 321.4,983.5 361.7,1023.9 402.0,1194.3 442.3,1133.7 482.6,1033.7 522.9,942.5 563.1,943.7 603.4,875.6 643.7,842.6 684.0,772.5 724.3,726.7 764.6,731.0 804.9,729.4 845.1,649.3 885.4,674.1 925.7,646.5 966.0,646.9 1006.3,671.2 1046.6,705.2 1086.9,672.6 1127.1,669.3 1167.4,573.9 1207.7,622.2 1248.0,643.6 1288.3,711.9 1328.6,737.4 1368.9,792.8 1409.1,832.4 1449.4,862.3 1489.7,914.3 1530.0,1118.8" fill="none" stroke="#009e73" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="120.0,938.3 160.3,1046.7 200.6,1137.9 240.9,613.3 281.1,799.0 321.4,1028.6 361.7,539.2 402.0,861.0 442.3,547.6 482.6,599.2 522.9,491.2 563.1,439.3 603.4,423.7 643.7,424.5 684.0,355.2 724.3,354.5 764.6,341.3 804.9,312.0 845.1,340.9 885.4,350.8 925.7,333.8 966.0,345.3 1006.3,317.3 1046.6,306.5 1086.9,234.6 1127.1,295.8 1167.4,259.6 1207.7,242.2 1248.0,286.5 1288.3,342.5 1328.6,371.4 1368.9,374.5 1409.1,466.5 1449.4,466.4 1489.7,496.3 1530.0,665.0" fill="none" stroke="#cc79a7" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="120.0,1480.0 160.3,1480.0 200.6,1480.0 240.9,1371.7 281.1,1480.0 321.4,1434.9 361.7,1451.5 402.0,1396.7 442.3,1435.6 482.6,1403.7 522.9,1390.4 563.1,1400.1 603.4,1338.6 643.7,1357.5 684.0,1335.8 724.3,1302.5 764.6,1307.6 804.9,1293.3 845.1,1302.4 885.4,1329.0 925.7,1311.0 966.0,1314.8 1006.3,1316.2 1046.6,1351.5 1086.9,1351.9 1127.1,1362.0 1167.4,1336.5 1207.7,1320.1 1248.0,1319.4 1288.3,1287.2 1328.6,1313.2 1368.9,1305.3 1409.1,1285.3 1449.4,1293.9 1489.7,1300.2 1530.0,1370.7" fill="none" stroke="#e69f00" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="120.0,1480.0 160.3,1480.0 200.6,1480.0 240.9,1371.7 281.1,1294.3 321.4,1434.9 361.7,1423.0 402.0,1361.0 442.3,1444.5 482.6,1362.6 522.9,1357.2 563.1,1377.0 603.4,1340.0 643.7,1356.4 684.0,1316.0 724.3,1312.9 764.6,1327.0 804.9,1307.4 845.1,1315.6 885.4,1304.2 925.7,1312.4 966.0,1296.9 1006.3,1272.3 1046.6,1295.0 1086.9,1259.0 1127.1,1281.7 1167.4,1223.9 1207.7,1210.7 1248.0,1223.8 1288.3,1185.2 1328.6,1193.2 1368.9,1202.4 1409.1,1197.0 1449.4,1169.6 1489.7,1176.5 1530.0,1241.6" fill="none" stroke="#6f63b6" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<line x1="482.6" y1="180" x2="482.6" y2="1480" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>
-<line x1="1530.0" y1="180" x2="1530.0" y2="1480" stroke="#b33a3a" stroke-width="2" stroke-dasharray="5 5"/>
-<text x="1522.0" y="1465" text-anchor="end" class="small">Current year is partial</text>
+<text x="1530.0" y="1510" text-anchor="middle" class="axis">2025</text>
+<polyline points="120.0,1480.0 161.5,1480.0 202.9,1480.0 244.4,1480.0 285.9,1420.0 327.4,1480.0 368.8,1452.4 410.3,1399.2 451.8,1462.8 493.2,1434.5 534.7,1390.0 576.2,1414.6 617.6,1390.0 659.1,1385.2 700.6,1384.8 742.1,1358.6 783.5,1384.1 825.0,1388.9 866.5,1387.8 907.9,1397.8 949.4,1379.4 990.9,1393.7 1032.4,1381.5 1073.8,1398.7 1115.3,1405.1 1156.8,1423.8 1198.2,1413.2 1239.7,1409.1 1281.2,1420.2 1322.6,1424.6 1364.1,1417.7 1405.6,1401.8 1447.1,1416.7 1488.5,1430.1 1530.0,1445.6" fill="none" stroke="#d55e00" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="120.0,1480.0 161.5,1270.0 202.9,1480.0 244.4,1375.0 285.9,1420.0 327.4,1130.0 368.8,1369.5 410.3,1376.2 451.8,1454.2 493.2,1366.2 534.7,1351.4 576.2,1302.7 617.6,1227.4 659.1,1212.5 700.6,1172.5 742.1,1074.5 783.5,1049.3 825.0,1012.2 866.5,976.3 907.9,918.8 949.4,905.5 990.9,857.0 1032.4,877.6 1073.8,880.0 1115.3,895.9 1156.8,843.2 1198.2,740.8 1239.7,697.6 1281.2,644.2 1322.6,575.1 1364.1,510.1 1405.6,533.6 1447.1,414.5 1488.5,427.6 1530.0,408.4" fill="none" stroke="#0072b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="120.0,1480.0 161.5,850.0 202.9,1148.4 244.4,1375.0 285.9,1180.0 327.4,998.8 368.8,1037.9 410.3,1203.1 451.8,1144.3 493.2,1047.5 534.7,959.0 576.2,960.2 617.6,894.2 659.1,862.2 700.6,794.3 742.1,749.9 783.5,754.1 825.0,752.5 866.5,674.8 907.9,698.9 949.4,672.1 990.9,672.6 1032.4,696.1 1073.8,729.0 1115.3,697.4 1156.8,694.3 1198.2,601.8 1239.7,648.6 1281.2,669.3 1322.6,735.5 1364.1,760.3 1405.6,814.0 1447.1,852.3 1488.5,881.3 1530.0,931.7" fill="none" stroke="#009e73" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="120.0,955.0 161.5,1060.0 202.9,1148.4 244.4,640.0 285.9,820.0 327.4,1042.5 368.8,568.2 410.3,880.0 451.8,576.3 493.2,626.3 534.7,521.7 576.2,471.3 617.6,456.2 659.1,456.9 700.6,389.8 742.1,389.2 783.5,376.3 825.0,347.9 866.5,375.9 907.9,385.6 949.4,369.1 990.9,380.2 1032.4,353.1 1073.8,342.6 1115.3,273.0 1156.8,332.2 1198.2,297.2 1239.7,280.3 1281.2,323.2 1322.6,377.5 1364.1,405.5 1405.6,408.5 1447.1,497.7 1488.5,497.6 1530.0,526.6" fill="none" stroke="#cc79a7" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="120.0,1480.0 161.5,1480.0 202.9,1480.0 244.4,1375.0 285.9,1480.0 327.4,1436.2 368.8,1452.4 410.3,1399.2 451.8,1437.0 493.2,1406.0 534.7,1393.2 576.2,1402.5 617.6,1343.0 659.1,1361.2 700.6,1340.2 742.1,1308.0 783.5,1312.9 825.0,1299.1 866.5,1307.8 907.9,1333.7 949.4,1316.2 990.9,1319.9 1032.4,1321.2 1073.8,1355.5 1115.3,1355.8 1156.8,1365.6 1198.2,1340.9 1239.7,1325.0 1281.2,1324.3 1322.6,1293.1 1364.1,1318.3 1405.6,1310.7 1447.1,1291.3 1488.5,1299.6 1530.0,1305.7" fill="none" stroke="#e69f00" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="120.0,1480.0 161.5,1480.0 202.9,1480.0 244.4,1375.0 285.9,1300.0 327.4,1436.2 368.8,1424.7 410.3,1364.6 451.8,1445.6 493.2,1366.2 534.7,1361.0 576.2,1380.2 617.6,1344.3 659.1,1360.2 700.6,1321.0 742.1,1318.1 783.5,1331.7 825.0,1312.7 866.5,1320.6 907.9,1309.6 949.4,1317.5 990.9,1302.5 1032.4,1278.7 1073.8,1300.6 1115.3,1265.8 1156.8,1287.8 1198.2,1231.8 1239.7,1219.0 1281.2,1231.7 1322.6,1194.3 1364.1,1202.0 1405.6,1211.0 1447.1,1205.7 1488.5,1179.2 1530.0,1185.9" fill="none" stroke="#6f63b6" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="493.2" y1="220" x2="493.2" y2="1480" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>
 <line x1="120" y1="1480" x2="1530" y2="1480" stroke="#394553" stroke-width="2"/>
-<line x1="120" y1="180" x2="120" y2="1480" stroke="#394553" stroke-width="2"/>
+<line x1="120" y1="220" x2="120" y2="1480" stroke="#394553" stroke-width="2"/>
 <text x="825.0" y="1558" text-anchor="middle" class="axis">Study Start Year</text>
-<text x="34" y="830.0" text-anchor="middle" class="axis" transform="rotate(-90 34 830.0)">Percentage of All Eligible Studies</text>
-<line x1="210" y1="112" x2="265" y2="112" stroke="#d55e00" stroke-width="5"/>
-<text x="280" y="117" class="legend">Africa</text>
-<line x1="640" y1="112" x2="695" y2="112" stroke="#0072b2" stroke-width="5"/>
-<text x="710" y="117" class="legend">Asia</text>
-<line x1="1070" y1="112" x2="1125" y2="112" stroke="#009e73" stroke-width="5"/>
-<text x="1140" y="117" class="legend">Europe</text>
-<line x1="210" y1="146" x2="265" y2="146" stroke="#cc79a7" stroke-width="5"/>
-<text x="280" y="151" class="legend">North America</text>
-<line x1="640" y1="146" x2="695" y2="146" stroke="#e69f00" stroke-width="5"/>
-<text x="710" y="151" class="legend">South America</text>
-<line x1="1070" y1="146" x2="1125" y2="146" stroke="#6f63b6" stroke-width="5"/>
-<text x="1140" y="151" class="legend">Oceania</text>
+<text x="34" y="850.0" text-anchor="middle" class="axis" transform="rotate(-90 34 850.0)">Percentage of All Eligible Studies</text>
+<line x1="210" y1="145" x2="265" y2="145" stroke="#d55e00" stroke-width="5"/>
+<text x="280" y="150" class="legend">Africa</text>
+<line x1="640" y1="145" x2="695" y2="145" stroke="#0072b2" stroke-width="5"/>
+<text x="710" y="150" class="legend">Asia</text>
+<line x1="1070" y1="145" x2="1125" y2="145" stroke="#009e73" stroke-width="5"/>
+<text x="1140" y="150" class="legend">Europe</text>
+<line x1="210" y1="179" x2="265" y2="179" stroke="#cc79a7" stroke-width="5"/>
+<text x="280" y="184" class="legend">North America</text>
+<line x1="640" y1="179" x2="695" y2="179" stroke="#e69f00" stroke-width="5"/>
+<text x="710" y="184" class="legend">South America</text>
+<line x1="1070" y1="179" x2="1125" y2="179" stroke="#6f63b6" stroke-width="5"/>
+<text x="1140" y="184" class="legend">Oceania</text>
 </svg>
