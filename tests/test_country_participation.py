@@ -1,9 +1,11 @@
 import unittest
+from tempfile import TemporaryDirectory
 from pathlib import Path
 
 from country_participation import (
-    aggregate_observations, completed_chart_rows, eligible_observation, load_continent_mapping,
-    parse_start_year,
+    aggregate_observations, chart_svg, completed_chart_rows, continent_chart_svg,
+    eligible_observation, focused_percentage_chart_svg, load_continent_mapping,
+    nexus_chart_svg, parse_start_year,
 )
 
 
@@ -59,6 +61,112 @@ class CountryParticipationTests(unittest.TestCase):
         self.assertEqual(annual[1992]["Unique Countries Involved"], 0)
         self.assertEqual(annual[1991]["3-Year Rolling Active Countries"], 2)
         self.assertEqual(annual[1993]["3-Year Rolling Active Countries"], 3)
+        percentages = {row["Year"]: row for row in result["focused_percentage_rows"]}
+        self.assertEqual(percentages[1991]["Multi-Country Studies"], 1)
+        self.assertEqual(percentages[1991]["Multi-Country Study Percentage"], 1 / 2)
+
+    def test_focused_percentage_chart_has_markers_padding_and_full_frame(self):
+        rows = [
+            {"Year": year, "Percentage": value}
+            for year, value in zip(range(2020, 2026), (0.30, 0.31, 0.29, 0.28, 0.27, 0.26))
+        ]
+        with TemporaryDirectory() as temporary_directory:
+            path = Path(temporary_directory) / "chart.svg"
+            focused_percentage_chart_svg(
+                rows,
+                path,
+                title="Test Percentage, 2020-2025",
+                y_axis_label="Studies (%)",
+                percentage_field="Percentage",
+                color="#146c94",
+            )
+            svg = path.read_text(encoding="utf-8")
+        self.assertIn("Test Percentage, 2020-2025", svg)
+        self.assertIn(">Start Year</text>", svg)
+        self.assertEqual(svg.count("<circle "), 6)
+        self.assertIn('fill="none" stroke="#000" stroke-width="2"', svg)
+        self.assertNotIn('cx="140.0"', svg)
+        self.assertNotIn('cx="1530.0"', svg)
+
+    def test_focused_percentage_chart_supports_dense_fractional_ticks(self):
+        rows = [
+            {"Year": 2020, "Percentage": 0.044},
+            {"Year": 2021, "Percentage": 0.077},
+        ]
+        with TemporaryDirectory() as temporary_directory:
+            path = Path(temporary_directory) / "chart.svg"
+            focused_percentage_chart_svg(
+                rows,
+                path,
+                title="Dense ticks",
+                y_axis_label="Studies (%)",
+                percentage_field="Percentage",
+                color="#146c94",
+                tick_step=0.0025,
+            )
+            svg = path.read_text(encoding="utf-8")
+        for label in ("4%", "4.25%", "4.5%", "4.75%", "8%"):
+            self.assertIn(f">{label}</text>", svg)
+
+    def test_focused_percentage_chart_can_omit_redundant_tick_percent_sign(self):
+        rows = [
+            {"Year": 2020, "Percentage": 0.044},
+            {"Year": 2021, "Percentage": 0.077},
+        ]
+        with TemporaryDirectory() as temporary_directory:
+            path = Path(temporary_directory) / "chart.svg"
+            focused_percentage_chart_svg(
+                rows,
+                path,
+                title="Dense ticks",
+                y_axis_label="Studies (%)",
+                percentage_field="Percentage",
+                color="#146c94",
+                tick_step=0.0025,
+                show_tick_percent_sign=False,
+            )
+            svg = path.read_text(encoding="utf-8")
+        for label in ("4", "4.25", "4.5", "4.75", "8"):
+            self.assertIn(f">{label}</text>", svg)
+        self.assertNotIn(">4.25%</text>", svg)
+
+    def test_historical_charts_use_small_markers_at_every_annual_point(self):
+        annual_rows = [
+            {"Year": 2020, "Unique Countries Involved": 10,
+             "3-Year Rolling Active Countries": 9},
+            {"Year": 2021, "Unique Countries Involved": 12,
+             "3-Year Rolling Active Countries": 11},
+        ]
+        nexus_rows = [
+            {"Year": 2020, "NEXUS Studies": 5,
+             "3-Year Moving Average NEXUS Studies": 4},
+            {"Year": 2021, "NEXUS Studies": 7,
+             "3-Year Moving Average NEXUS Studies": 6},
+        ]
+        continent_rows = [
+            {"Year": year, "Continent": continent,
+             "Percentage of All Eligible Studies": 0.1}
+            for year in (2020, 2021) for continent in (
+                "Africa", "Asia", "Europe", "North America", "South America", "Oceania"
+            )
+        ]
+        with TemporaryDirectory() as temporary_directory:
+            directory = Path(temporary_directory)
+            annual_path = directory / "annual.svg"
+            continent_path = directory / "continent.svg"
+            nexus_path = directory / "nexus.svg"
+            chart_svg(annual_rows, annual_path, 2021)
+            continent_chart_svg(continent_rows, continent_path, 2021)
+            nexus_chart_svg(nexus_rows, nexus_path, 2021)
+            annual_svg = annual_path.read_text(encoding="utf-8")
+            continent_svg = continent_path.read_text(encoding="utf-8")
+            nexus_svg = nexus_path.read_text(encoding="utf-8")
+        self.assertEqual(annual_svg.count("<circle "), 4)
+        self.assertEqual(continent_svg.count("<circle "), 12)
+        self.assertEqual(nexus_svg.count("<circle "), 4)
+        self.assertIn('r="4"', annual_svg)
+        self.assertIn('r="5"', nexus_svg)
+        self.assertIn('r="4.5"', continent_svg)
 
     def test_first_active_year_is_unique_and_counts_studies(self):
         observations = [

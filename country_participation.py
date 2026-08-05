@@ -207,10 +207,12 @@ def aggregate_observations(
                     "Year Status": "partial year" if year == reporting_end_year else "complete year",
                 })
     nexus_rows = []
+    focused_percentage_rows = []
     for year in years:
         denominator = len(year_study_ids[year])
         known_denominator = len(year_known_location_ids[year])
         count = len(year_nexus_ids[year])
+        multicountry_count = sum(country_count > 1 for country_count in study_country_counts[year])
         moving_years = range(max(start_year, year - 2), year + 1)
         moving_counts = [len(year_nexus_ids[item]) for item in moving_years]
         nexus_rows.append({
@@ -221,6 +223,17 @@ def aggregate_observations(
             "NEXUS Percentage of All Eligible Studies": count / denominator if denominator else None,
             "NEXUS Percentage of Known-Location Studies": count / known_denominator if known_denominator else None,
             "3-Year Moving Average NEXUS Studies": sum(moving_counts) / len(moving_counts),
+            "Year Status": "partial year" if year == reporting_end_year else "complete year",
+        })
+        focused_percentage_rows.append({
+            "Year": year,
+            "Eligible Studies Started": denominator,
+            "Multi-Country Studies": multicountry_count,
+            "Multi-Country Study Percentage": (
+                multicountry_count / denominator if denominator else None
+            ),
+            "US & China Involved Studies": count,
+            "US & China Involved Study Percentage": count / denominator if denominator else None,
             "Year Status": "partial year" if year == reporting_end_year else "complete year",
         })
 
@@ -375,6 +388,11 @@ def aggregate_observations(
         "annual_nexus_is_subset_of_known_location_studies": all(
             year_nexus_ids[year] <= year_known_location_ids[year] for year in years
         ),
+        "focused_percentage_numerators_do_not_exceed_denominators": all(
+            row["Multi-Country Studies"] <= row["Eligible Studies Started"]
+            and row["US & China Involved Studies"] <= row["Eligible Studies Started"]
+            for row in focused_percentage_rows
+        ),
     }
     if not all(validations.values()):
         failed = [name for name, passed in validations.items() if not passed]
@@ -388,6 +406,7 @@ def aggregate_observations(
         "return_summary_rows": return_summary_rows,
         "continent_rows": continent_rows,
         "nexus_rows": nexus_rows,
+        "focused_percentage_rows": focused_percentage_rows,
         "country_change_2025_rows": country_change_2025_rows,
         "comparison_2024_2025": comparison_2025,
         "eligible_study_count": len(observations),
@@ -438,12 +457,11 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.period{font-size:22px;font-weight:700;fill:#146c94}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}</style>',
-        '<text x="800" y="43" text-anchor="middle" class="title">Annual Geographic Breadth of Industry-Sponsored Drug-Containing Clinical Trials</text>',
-        f'<text x="800" y="77" text-anchor="middle" class="period">Complete Study Start Years: {years[0]}–{years[-1]}</text>',
-        '<text x="800" y="108" text-anchor="middle" class="subtitle">Interventional studies with Lead Sponsor Class = INDUSTRY and at least one DRUG intervention</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}.footnote{font-size:13px;fill:#556273;font-style:italic}</style>',
+        f'<text x="800" y="48" text-anchor="middle" class="title">Annual Geographic Breadth of Industry-Sponsored Clinical Trials ({years[0]}–{years[-1]})*</text>',
+        '<text x="800" y="82" text-anchor="middle" class="subtitle">Interventional studies with Lead Sponsor Class = INDUSTRY and at least one DRUG intervention</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
-        f'<text x="{(left+x(2000))/2:.1f}" y="{top+25}" text-anchor="middle" class="small">Pre-ClinicalTrials.gov / retrospectively registered period</text>',
+        f'<text x="{x(2000)-18:.1f}" y="{top+25}" text-anchor="end" class="small">Retrospectively registered period</text>',
     ]
     for value in range(0, y_max + 1, y_step):
         yy = y(value)
@@ -456,15 +474,24 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
                       f'<text x="{xx:.1f}" y="{top+plot_h+30}" text-anchor="middle" class="axis">{year}</text>']
     parts += [
         f'<line x1="{x(2000):.1f}" y1="{top}" x2="{x(2000):.1f}" y2="{top+plot_h}" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>',
-        f'<text x="{x(2000)+8:.1f}" y="{top+48}" class="small">ClinicalTrials.gov era begins (2000)</text>',
+        f'<text x="{x(2000)+18:.1f}" y="{top+25}" class="small">ClinicalTrials.gov launched (2000)</text>',
         f'<line x1="{left}" y1="{top+plot_h}" x2="{width-right}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<polyline points="{rolling_points}" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>',
         f'<polyline points="{annual_points}" fill="none" stroke="#146c94" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>',
-        f'<text x="{left+plot_w/2:.1f}" y="{height-42}" text-anchor="middle" class="axis">Study Start Year</text>',
+        *(
+            f'<circle cx="{x(year):.1f}" cy="{y(value):.1f}" r="4" fill="#9aa7b2"/>'
+            for year, value in zip(years, rolling)
+        ),
+        *(
+            f'<circle cx="{x(year):.1f}" cy="{y(value):.1f}" r="5" fill="#146c94"/>'
+            for year, value in zip(years, annual)
+        ),
+        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis">Study Start Year</text>',
         f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Number of Unique Countries Involved</text>',
         f'<line x1="{width-520}" y1="140" x2="{width-465}" y2="140" stroke="#146c94" stroke-width="5"/><text x="{width-450}" y="145" class="legend">Annual active countries</text>',
         f'<line x1="{width-270}" y1="140" x2="{width-215}" y2="140" stroke="#9aa7b2" stroke-width="4"/><text x="{width-200}" y="145" class="legend">3-year rolling</text>',
+        f'<text x="{left}" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>',
         '</svg>',
     ]
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
@@ -500,12 +527,11 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.period{font-size:22px;font-weight:700;fill:#146c94}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:14px}</style>',
-        '<text x="800" y="43" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Drug-Containing Clinical Trials</text>',
-        f'<text x="800" y="77" text-anchor="middle" class="period">Complete Study Start Years: {years[0]}–{years[-1]}</text>',
-        '<text x="800" y="108" text-anchor="middle" class="subtitle">Share of all eligible studies with a registered location in each continent; non-exclusive study-level participation</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:14px}.footnote{font-size:13px;fill:#556273;font-style:italic}</style>',
+        f'<text x="800" y="48" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Clinical Trials ({years[0]}–{years[-1]})*</text>',
+        '<text x="800" y="82" text-anchor="middle" class="subtitle">Share of all eligible studies with a registered location in each continent; non-exclusive study-level participation</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
-        f'<text x="{(left+x(2000))/2:.1f}" y="{top+25}" text-anchor="middle" class="small">Retrospectively registered period</text>',
+        f'<text x="{x(2000)-18:.1f}" y="{top+25}" text-anchor="end" class="small">Retrospectively registered period</text>',
     ]
     for value_index in range(int(round(y_max / y_step)) + 1):
         value = value_index * y_step
@@ -529,11 +555,16 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
             f'<polyline points="{points}" fill="none" stroke="{colors[continent]}" '
             'stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>'
         )
+        parts.extend(
+            f'<circle cx="{x(year):.1f}" cy="{y(by_continent[continent].get(year)):.1f}" r="4.5" fill="{colors[continent]}"/>'
+            for year in years
+        )
     parts += [
         f'<line x1="{x(2000):.1f}" y1="{top}" x2="{x(2000):.1f}" y2="{top+plot_h}" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>',
+        f'<text x="{x(2000)+18:.1f}" y="{top+25}" class="small">ClinicalTrials.gov launched (2000)</text>',
         f'<line x1="{left}" y1="{top+plot_h}" x2="{width-right}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
-        f'<text x="{left+plot_w/2:.1f}" y="{height-42}" text-anchor="middle" class="axis">Study Start Year</text>',
+        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis">Study Start Year</text>',
         f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Percentage of All Eligible Studies</text>',
     ]
     for index, continent in enumerate(CONTINENT_ORDER):
@@ -543,6 +574,9 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
             f'<line x1="{legend_x}" y1="{legend_y}" x2="{legend_x+55}" y2="{legend_y}" stroke="{colors[continent]}" stroke-width="5"/>',
             f'<text x="{legend_x+70}" y="{legend_y+5}" class="legend">{continent}</text>',
         ]
+    parts.append(
+        f'<text x="{left}" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>'
+    )
     parts.append("</svg>")
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
@@ -565,12 +599,11 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.period{font-size:22px;font-weight:700;fill:#7b2cbf}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}</style>',
-        '<text x="800" y="43" text-anchor="middle" class="title">Annual NEXUS Studies by Registered Study Start Year</text>',
-        f'<text x="800" y="77" text-anchor="middle" class="period">Complete Study Start Years: {years[0]}–{years[-1]}</text>',
-        '<text x="800" y="108" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}.footnote{font-size:13px;fill:#556273;font-style:italic}</style>',
+        f'<text x="800" y="48" text-anchor="middle" class="title">Annual US &amp; China Involved Studies by Registered Study Start Year ({years[0]}–{years[-1]})*</text>',
+        '<text x="800" y="82" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
-        f'<text x="{(left+x(2000))/2:.1f}" y="{top+25}" text-anchor="middle" class="small">Retrospectively registered period</text>',
+        f'<text x="{x(2000)-18:.1f}" y="{top+25}" text-anchor="end" class="small">Retrospectively registered period</text>',
     ]
     for value in range(0, y_max + 1, y_step):
         yy = y(value)
@@ -587,15 +620,103 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
             ]
     parts += [
         f'<line x1="{x(2000):.1f}" y1="{top}" x2="{x(2000):.1f}" y2="{top+plot_h}" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>',
+        f'<text x="{x(2000)+18:.1f}" y="{top+25}" class="small">ClinicalTrials.gov launched (2000)</text>',
         f'<polyline points="{moving_points}" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>',
         f'<polyline points="{count_points}" fill="none" stroke="#7b2cbf" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>',
+        *(
+            f'<circle cx="{x(year):.1f}" cy="{y(value):.1f}" r="4" fill="#9aa7b2"/>'
+            for year, value in zip(years, moving)
+        ),
+        *(
+            f'<circle cx="{x(year):.1f}" cy="{y(value):.1f}" r="5" fill="#7b2cbf"/>'
+            for year, value in zip(years, counts)
+        ),
         f'<line x1="{left}" y1="{top+plot_h}" x2="{width-right}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
-        f'<text x="{left+plot_w/2:.1f}" y="{height-42}" text-anchor="middle" class="axis">Study Start Year</text>',
-        f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Number of NEXUS Studies</text>',
-        f'<line x1="{width-580}" y1="145" x2="{width-525}" y2="145" stroke="#7b2cbf" stroke-width="5"/><text x="{width-510}" y="150" class="legend">Annual NEXUS studies</text>',
+        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis">Study Start Year</text>',
+        f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Number of US &amp; China Involved Studies</text>',
+        f'<line x1="{width-650}" y1="145" x2="{width-595}" y2="145" stroke="#7b2cbf" stroke-width="5"/><text x="{width-580}" y="150" class="legend">Annual US &amp; China Involved studies</text>',
         f'<line x1="{width-300}" y1="145" x2="{width-245}" y2="145" stroke="#9aa7b2" stroke-width="4"/><text x="{width-230}" y="150" class="legend">3-year moving average</text>',
+        f'<text x="{left}" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>',
         "</svg>",
+    ]
+    path.write_text("\n".join(parts) + "\n", encoding="utf-8")
+
+
+def focused_percentage_chart_svg(
+    rows: list[dict], path: Path, *, title: str, y_axis_label: str,
+    percentage_field: str, color: str, tick_step: float | None = None,
+    show_tick_percent_sign: bool = True,
+) -> None:
+    """Render a focused annual-percentage chart with padded endpoints and a full frame."""
+    if not rows:
+        raise ValueError("focused percentage chart has no observations")
+    width, height = 1600, 1000
+    left, right, top, bottom = 140, 70, 115, 140
+    plot_w, plot_h = width - left - right, height - top - bottom
+    years = [row["Year"] for row in rows]
+    values = [row[percentage_field] for row in rows]
+    if any(value is None for value in values):
+        raise ValueError("focused percentage chart contains an undefined percentage")
+    if len(set(years)) != len(years) or years != sorted(years):
+        raise ValueError("focused percentage chart years must be unique and sorted")
+
+    minimum = min(values)
+    maximum = max(values)
+    value_span = maximum - minimum
+    y_step = 0.02 if value_span > 0.04 else 0.01
+    y_min = math.floor(minimum / y_step) * y_step
+    y_max = math.ceil(maximum / y_step) * y_step
+    if math.isclose(y_min, y_max):
+        y_min = max(0.0, y_min - y_step)
+        y_max += y_step
+    x_padding = 85
+    inner_width = plot_w - 2 * x_padding
+    x = lambda year: left + x_padding + (
+        (year - years[0]) / max(1, years[-1] - years[0]) * inner_width
+    )
+    y = lambda value: top + plot_h - (value - y_min) / (y_max - y_min) * plot_h
+    points = " ".join(
+        f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, values)
+    )
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff"/>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:18px}.tick{font-size:16px}</style>',
+        f'<text x="{width/2:.1f}" y="55" text-anchor="middle" class="title">{title}</text>',
+    ]
+    displayed_tick_step = tick_step or y_step
+    if displayed_tick_step <= 0:
+        raise ValueError("focused percentage chart tick step must be positive")
+    tick_count = int(round((y_max - y_min) / displayed_tick_step))
+    for index in range(tick_count + 1):
+        value = y_min + index * displayed_tick_step
+        yy = y(value)
+        tick_label = f"{value * 100:.2f}".rstrip("0").rstrip(".")
+        if show_tick_percent_sign:
+            tick_label += "%"
+        parts += [
+            f'<line x1="{left}" y1="{yy:.1f}" x2="{width-right}" y2="{yy:.1f}" stroke="#d8dde3" stroke-width="1"/>',
+            f'<text x="{left-18}" y="{yy+6:.1f}" text-anchor="end" class="tick">{tick_label}</text>',
+        ]
+    for year in years:
+        xx = x(year)
+        parts += [
+            f'<line x1="{xx:.1f}" y1="{top+plot_h}" x2="{xx:.1f}" y2="{top+plot_h+8}" stroke="#000" stroke-width="2"/>',
+            f'<text x="{xx:.1f}" y="{top+plot_h+34}" text-anchor="middle" class="tick">{year}</text>',
+        ]
+    parts += [
+        f'<polyline points="{points}" fill="none" stroke="{color}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>',
+    ]
+    for year, value in zip(years, values):
+        parts.append(
+            f'<circle cx="{x(year):.1f}" cy="{y(value):.1f}" r="8" fill="{color}"/>'
+        )
+    parts += [
+        f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="none" stroke="#000" stroke-width="2"/>',
+        f'<text x="{left+plot_w/2:.1f}" y="{height-48}" text-anchor="middle" class="axis">Start Year</text>',
+        f'<text x="38" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 38 {top+plot_h/2:.1f})">{y_axis_label}</text>',
+        '</svg>',
     ]
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
@@ -874,6 +995,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--outdir", type=Path, default=Path("reports/country_participation_trend"))
+    parser.add_argument(
+        "--percentage-outdir", type=Path,
+        default=Path("reports/annual_percentage_trends_2020_2025"),
+    )
     parser.add_argument("--start-year", type=int, default=1991)
     parser.add_argument("--continent-mapping", type=Path,
                         default=Path(__file__).with_name("continent_mapping.json"))
@@ -893,8 +1018,9 @@ def main(argv: list[str] | None = None) -> int:
     missing_fields = sorted(REQUIRED_FIELDS - fields)
     if missing_fields:
         parser.error(f"snapshot is missing required harvested fields: {', '.join(missing_fields)}")
-    if args.outdir.exists() and any(args.outdir.iterdir()) and not args.replace_output:
-        parser.error(f"output directory already exists and is not empty: {args.outdir}")
+    for output_directory in (args.outdir, args.percentage_outdir):
+        if output_directory.exists() and any(output_directory.iterdir()) and not args.replace_output:
+            parser.error(f"output directory already exists and is not empty: {output_directory}")
     continent_mapping, continent_document = load_continent_mapping(args.continent_mapping)
 
     snapshot_date = datetime.fromisoformat(manifest["harvest_timestamp_utc"].replace("Z", "+00:00")).date()
@@ -950,6 +1076,7 @@ def main(argv: list[str] | None = None) -> int:
         "continent_mapping_definition": continent_document["definition"],
     }
     args.outdir.mkdir(parents=True, exist_ok=True)
+    args.percentage_outdir.mkdir(parents=True, exist_ok=True)
     write_csv(args.outdir / "annual_country_participation.csv", result["annual_rows"], list(result["annual_rows"][0]))
     write_csv(args.outdir / "country_first_active_year.csv", result["first_rows"], ["Country", "First Active Year", "Studies in First Active Year"])
     write_csv(args.outdir / "first_time_countries_by_year.csv", result["first_summary_rows"], ["Year", "Number of First-Time Countries", "First-Time Countries"])
@@ -980,7 +1107,47 @@ def main(argv: list[str] | None = None) -> int:
     nexus_svg_path = args.outdir / "annual_nexus_studies_trend.svg"
     nexus_chart_svg(result["nexus_rows"], nexus_svg_path, metadata["latest_complete_year"])
     svg_to_png(nexus_svg_path, args.outdir / "annual_nexus_studies_trend.png")
+    focused_rows = [
+        row for row in result["focused_percentage_rows"]
+        if 2020 <= row["Year"] <= 2025
+    ]
+    write_csv(
+        args.percentage_outdir / "annual_percentage_data_2020_2025.csv",
+        focused_rows,
+        list(focused_rows[0]),
+    )
+    multicountry_svg_path = args.percentage_outdir / "multi_country_study_percentage_2020_2025.svg"
+    focused_percentage_chart_svg(
+        focused_rows,
+        multicountry_svg_path,
+        title="Multi-country Study Percentage, 2020-2025",
+        y_axis_label="Multi-Country Studies (%)",
+        percentage_field="Multi-Country Study Percentage",
+        color="#146c94",
+        tick_step=0.01,
+        show_tick_percent_sign=False,
+    )
+    svg_to_png(
+        multicountry_svg_path,
+        args.percentage_outdir / "multi_country_study_percentage_2020_2025.png",
+    )
+    us_china_svg_path = args.percentage_outdir / "us_china_involved_studies_percentage_2020_2025.svg"
+    focused_percentage_chart_svg(
+        focused_rows,
+        us_china_svg_path,
+        title="US &amp; China Involved Studies Percentage, 2020-2025",
+        y_axis_label="US &amp; China Involved Studies (%)",
+        percentage_field="US & China Involved Study Percentage",
+        color="#146c94",
+        tick_step=0.0025,
+        show_tick_percent_sign=False,
+    )
+    svg_to_png(
+        us_china_svg_path,
+        args.percentage_outdir / "us_china_involved_studies_percentage_2020_2025.png",
+    )
     print(args.outdir)
+    print(args.percentage_outdir)
     return 0
 
 

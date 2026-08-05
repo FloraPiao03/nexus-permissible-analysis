@@ -269,6 +269,7 @@ A first-time country means its first appearance in the current eligible Clinical
 - continent_counts_do_not_exceed_annual_denominator: **PASS**
 - known_location_studies_have_at_least_one_mapped_continent: **PASS**
 - annual_nexus_is_subset_of_known_location_studies: **PASS**
+- focused_percentage_numerators_do_not_exceed_denominators: **PASS**
 
 ## Interpretation limitations
 
