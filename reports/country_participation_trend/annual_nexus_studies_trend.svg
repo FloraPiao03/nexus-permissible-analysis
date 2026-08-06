@@ -1,119 +1,119 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1600" viewBox="0 0 1600 1600">
-<rect x="0" y="0" width="1600" height="1600" fill="#ffffff" fill-opacity="1"/>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}.footnote{font-size:13px;fill:#556273;font-style:italic}</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1300" viewBox="0 0 1600 1300">
+<rect x="0" y="0" width="1600" height="1300" fill="#ffffff" fill-opacity="1"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>
 <text x="800" y="48" text-anchor="middle" class="title">Annual US &amp; China Involved Studies by Registered Study Start Year (1991–2025)*</text>
 <text x="800" y="82" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>
-<rect x="120" y="185" width="373.2" height="1295" fill="#f3f0e8"/>
-<text x="475.2" y="210" text-anchor="end" class="small">Retrospectively registered period</text>
-<line x1="120" y1="1480.0" x2="1530" y2="1480.0" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="1485.0" text-anchor="end" class="axis">0</text>
-<line x1="120" y1="1264.2" x2="1530" y2="1264.2" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="1269.2" text-anchor="end" class="axis">50</text>
-<line x1="120" y1="1048.3" x2="1530" y2="1048.3" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="1053.3" text-anchor="end" class="axis">100</text>
-<line x1="120" y1="832.5" x2="1530" y2="832.5" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="837.5" text-anchor="end" class="axis">150</text>
-<line x1="120" y1="616.7" x2="1530" y2="616.7" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="621.7" text-anchor="end" class="axis">200</text>
-<line x1="120" y1="400.8" x2="1530" y2="400.8" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="405.8" text-anchor="end" class="axis">250</text>
-<line x1="120" y1="185.0" x2="1530" y2="185.0" stroke="#dfe5eb" stroke-width="1"/>
-<text x="102" y="190.0" text-anchor="end" class="axis">300</text>
-<line x1="120.0" y1="1480" x2="120.0" y2="1487" stroke="#4d5966"/>
-<text x="120.0" y="1510" text-anchor="middle" class="axis">1991</text>
-<line x1="285.9" y1="1480" x2="285.9" y2="1487" stroke="#4d5966"/>
-<text x="285.9" y="1510" text-anchor="middle" class="axis">1995</text>
-<line x1="493.2" y1="1480" x2="493.2" y2="1487" stroke="#4d5966"/>
-<text x="493.2" y="1510" text-anchor="middle" class="axis">2000</text>
-<line x1="700.6" y1="1480" x2="700.6" y2="1487" stroke="#4d5966"/>
-<text x="700.6" y="1510" text-anchor="middle" class="axis">2005</text>
-<line x1="907.9" y1="1480" x2="907.9" y2="1487" stroke="#4d5966"/>
-<text x="907.9" y="1510" text-anchor="middle" class="axis">2010</text>
-<line x1="1115.3" y1="1480" x2="1115.3" y2="1487" stroke="#4d5966"/>
-<text x="1115.3" y="1510" text-anchor="middle" class="axis">2015</text>
-<line x1="1322.6" y1="1480" x2="1322.6" y2="1487" stroke="#4d5966"/>
-<text x="1322.6" y="1510" text-anchor="middle" class="axis">2020</text>
-<line x1="1530.0" y1="1480" x2="1530.0" y2="1487" stroke="#4d5966"/>
-<text x="1530.0" y="1510" text-anchor="middle" class="axis">2025</text>
-<line x1="493.2" y1="185" x2="493.2" y2="1480" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>
-<text x="511.2" y="210" class="small">ClinicalTrials.gov launched (2000)</text>
-<polyline points="120.0,1480.0 161.5,1480.0 202.9,1480.0 244.4,1480.0 285.9,1480.0 327.4,1480.0 368.8,1480.0 410.3,1480.0 451.8,1480.0 493.2,1478.6 534.7,1469.9 576.2,1461.3 617.6,1446.9 659.1,1451.2 700.6,1429.6 742.1,1408.1 783.5,1354.8 825.0,1318.8 866.5,1300.1 907.9,1310.2 949.4,1328.9 990.9,1340.4 1032.4,1331.8 1073.8,1327.5 1115.3,1313.1 1156.8,1316.0 1198.2,1267.0 1239.7,1173.5 1281.2,1035.4 1322.6,923.1 1364.1,774.9 1405.6,678.5 1447.1,587.9 1488.5,592.2 1530.0,459.8" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="120.0,1480.0 161.5,1480.0 202.9,1480.0 244.4,1480.0 285.9,1480.0 327.4,1480.0 368.8,1480.0 410.3,1480.0 451.8,1480.0 493.2,1475.7 534.7,1454.1 576.2,1454.1 617.6,1432.5 659.1,1467.0 700.6,1389.3 742.1,1367.8 783.5,1307.3 825.0,1281.4 866.5,1311.7 907.9,1337.5 949.4,1337.5 990.9,1346.2 1032.4,1311.7 1073.8,1324.6 1115.3,1303.0 1156.8,1320.3 1198.2,1177.8 1239.7,1022.4 1281.2,905.9 1322.6,841.1 1364.1,577.8 1405.6,616.7 1447.1,569.2 1488.5,590.8 1530.0,219.5" fill="none" stroke="#7b2cbf" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="120.0" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="161.5" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="202.9" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="244.4" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="285.9" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="327.4" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="368.8" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="410.3" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="451.8" cy="1480.0" r="4" fill="#9aa7b2"/>
-<circle cx="493.2" cy="1478.6" r="4" fill="#9aa7b2"/>
-<circle cx="534.7" cy="1469.9" r="4" fill="#9aa7b2"/>
-<circle cx="576.2" cy="1461.3" r="4" fill="#9aa7b2"/>
-<circle cx="617.6" cy="1446.9" r="4" fill="#9aa7b2"/>
-<circle cx="659.1" cy="1451.2" r="4" fill="#9aa7b2"/>
-<circle cx="700.6" cy="1429.6" r="4" fill="#9aa7b2"/>
-<circle cx="742.1" cy="1408.1" r="4" fill="#9aa7b2"/>
-<circle cx="783.5" cy="1354.8" r="4" fill="#9aa7b2"/>
-<circle cx="825.0" cy="1318.8" r="4" fill="#9aa7b2"/>
-<circle cx="866.5" cy="1300.1" r="4" fill="#9aa7b2"/>
-<circle cx="907.9" cy="1310.2" r="4" fill="#9aa7b2"/>
-<circle cx="949.4" cy="1328.9" r="4" fill="#9aa7b2"/>
-<circle cx="990.9" cy="1340.4" r="4" fill="#9aa7b2"/>
-<circle cx="1032.4" cy="1331.8" r="4" fill="#9aa7b2"/>
-<circle cx="1073.8" cy="1327.5" r="4" fill="#9aa7b2"/>
-<circle cx="1115.3" cy="1313.1" r="4" fill="#9aa7b2"/>
-<circle cx="1156.8" cy="1316.0" r="4" fill="#9aa7b2"/>
-<circle cx="1198.2" cy="1267.0" r="4" fill="#9aa7b2"/>
-<circle cx="1239.7" cy="1173.5" r="4" fill="#9aa7b2"/>
-<circle cx="1281.2" cy="1035.4" r="4" fill="#9aa7b2"/>
-<circle cx="1322.6" cy="923.1" r="4" fill="#9aa7b2"/>
-<circle cx="1364.1" cy="774.9" r="4" fill="#9aa7b2"/>
-<circle cx="1405.6" cy="678.5" r="4" fill="#9aa7b2"/>
-<circle cx="1447.1" cy="587.9" r="4" fill="#9aa7b2"/>
-<circle cx="1488.5" cy="592.2" r="4" fill="#9aa7b2"/>
-<circle cx="1530.0" cy="459.8" r="4" fill="#9aa7b2"/>
-<circle cx="120.0" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="161.5" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="202.9" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="244.4" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="285.9" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="327.4" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="368.8" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="410.3" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="451.8" cy="1480.0" r="5" fill="#7b2cbf"/>
-<circle cx="493.2" cy="1475.7" r="5" fill="#7b2cbf"/>
-<circle cx="534.7" cy="1454.1" r="5" fill="#7b2cbf"/>
-<circle cx="576.2" cy="1454.1" r="5" fill="#7b2cbf"/>
-<circle cx="617.6" cy="1432.5" r="5" fill="#7b2cbf"/>
-<circle cx="659.1" cy="1467.0" r="5" fill="#7b2cbf"/>
-<circle cx="700.6" cy="1389.3" r="5" fill="#7b2cbf"/>
-<circle cx="742.1" cy="1367.8" r="5" fill="#7b2cbf"/>
-<circle cx="783.5" cy="1307.3" r="5" fill="#7b2cbf"/>
-<circle cx="825.0" cy="1281.4" r="5" fill="#7b2cbf"/>
-<circle cx="866.5" cy="1311.7" r="5" fill="#7b2cbf"/>
-<circle cx="907.9" cy="1337.5" r="5" fill="#7b2cbf"/>
-<circle cx="949.4" cy="1337.5" r="5" fill="#7b2cbf"/>
-<circle cx="990.9" cy="1346.2" r="5" fill="#7b2cbf"/>
-<circle cx="1032.4" cy="1311.7" r="5" fill="#7b2cbf"/>
-<circle cx="1073.8" cy="1324.6" r="5" fill="#7b2cbf"/>
-<circle cx="1115.3" cy="1303.0" r="5" fill="#7b2cbf"/>
-<circle cx="1156.8" cy="1320.3" r="5" fill="#7b2cbf"/>
-<circle cx="1198.2" cy="1177.8" r="5" fill="#7b2cbf"/>
-<circle cx="1239.7" cy="1022.4" r="5" fill="#7b2cbf"/>
-<circle cx="1281.2" cy="905.9" r="5" fill="#7b2cbf"/>
-<circle cx="1322.6" cy="841.1" r="5" fill="#7b2cbf"/>
-<circle cx="1364.1" cy="577.8" r="5" fill="#7b2cbf"/>
-<circle cx="1405.6" cy="616.7" r="5" fill="#7b2cbf"/>
-<circle cx="1447.1" cy="569.2" r="5" fill="#7b2cbf"/>
-<circle cx="1488.5" cy="590.8" r="5" fill="#7b2cbf"/>
-<circle cx="1530.0" cy="219.5" r="5" fill="#7b2cbf"/>
-<line x1="120" y1="1480" x2="1530" y2="1480" stroke="#394553" stroke-width="2"/>
-<line x1="120" y1="185" x2="120" y2="1480" stroke="#394553" stroke-width="2"/>
-<text x="825.0" y="1542" text-anchor="middle" class="axis">Study Start Year</text>
-<text x="34" y="832.5" text-anchor="middle" class="axis" transform="rotate(-90 34 832.5)">Number of US &amp; China Involved Studies</text>
-<line x1="950" y1="145" x2="1005" y2="145" stroke="#7b2cbf" stroke-width="5"/><text x="1020" y="150" class="legend">Annual US &amp; China Involved studies</text>
-<line x1="1300" y1="145" x2="1355" y2="145" stroke="#9aa7b2" stroke-width="4"/><text x="1370" y="150" class="legend">3-year moving average</text>
-<text x="120" y="1582" class="footnote">*Figures include complete calendar years 1991–2025. Calendar year 2026 was incomplete at the data cutoff and is therefore not shown.</text>
+<rect x="150" y="185" width="369.1" height="995" fill="#f3f0e8"/>
+<text x="501.1" y="210" text-anchor="end" class="small">Retrospectively registered period</text>
+<line x1="150" y1="1180.0" x2="1500" y2="1180.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="132" y="1185.0" text-anchor="end" class="axis-tick">0</text>
+<line x1="150" y1="1014.2" x2="1500" y2="1014.2" stroke="#dfe5eb" stroke-width="1"/>
+<text x="132" y="1019.2" text-anchor="end" class="axis-tick">50</text>
+<line x1="150" y1="848.3" x2="1500" y2="848.3" stroke="#dfe5eb" stroke-width="1"/>
+<text x="132" y="853.3" text-anchor="end" class="axis-tick">100</text>
+<line x1="150" y1="682.5" x2="1500" y2="682.5" stroke="#dfe5eb" stroke-width="1"/>
+<text x="132" y="687.5" text-anchor="end" class="axis-tick">150</text>
+<line x1="150" y1="516.7" x2="1500" y2="516.7" stroke="#dfe5eb" stroke-width="1"/>
+<text x="132" y="521.7" text-anchor="end" class="axis-tick">200</text>
+<line x1="150" y1="350.8" x2="1500" y2="350.8" stroke="#dfe5eb" stroke-width="1"/>
+<text x="132" y="355.8" text-anchor="end" class="axis-tick">250</text>
+<line x1="150" y1="185.0" x2="1500" y2="185.0" stroke="#dfe5eb" stroke-width="1"/>
+<text x="132" y="190.0" text-anchor="end" class="axis-tick">300</text>
+<line x1="175.0" y1="1180" x2="175.0" y2="1187" stroke="#4d5966"/>
+<text x="175.0" y="1210" text-anchor="middle" class="axis-tick">1991</text>
+<line x1="327.9" y1="1180" x2="327.9" y2="1187" stroke="#4d5966"/>
+<text x="327.9" y="1210" text-anchor="middle" class="axis-tick">1995</text>
+<line x1="519.1" y1="1180" x2="519.1" y2="1187" stroke="#4d5966"/>
+<text x="519.1" y="1210" text-anchor="middle" class="axis-tick">2000</text>
+<line x1="710.3" y1="1180" x2="710.3" y2="1187" stroke="#4d5966"/>
+<text x="710.3" y="1210" text-anchor="middle" class="axis-tick">2005</text>
+<line x1="901.5" y1="1180" x2="901.5" y2="1187" stroke="#4d5966"/>
+<text x="901.5" y="1210" text-anchor="middle" class="axis-tick">2010</text>
+<line x1="1092.6" y1="1180" x2="1092.6" y2="1187" stroke="#4d5966"/>
+<text x="1092.6" y="1210" text-anchor="middle" class="axis-tick">2015</text>
+<line x1="1283.8" y1="1180" x2="1283.8" y2="1187" stroke="#4d5966"/>
+<text x="1283.8" y="1210" text-anchor="middle" class="axis-tick">2020</text>
+<line x1="1475.0" y1="1180" x2="1475.0" y2="1187" stroke="#4d5966"/>
+<text x="1475.0" y="1210" text-anchor="middle" class="axis-tick">2025</text>
+<line x1="519.1" y1="185" x2="519.1" y2="1180" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>
+<text x="537.1" y="210" class="small">ClinicalTrials.gov launched (2000)</text>
+<polyline points="175.0,1180.0 213.2,1180.0 251.5,1180.0 289.7,1180.0 327.9,1180.0 366.2,1180.0 404.4,1180.0 442.6,1180.0 480.9,1180.0 519.1,1178.9 557.4,1172.3 595.6,1165.6 633.8,1154.6 672.1,1157.9 710.3,1141.3 748.5,1124.7 786.8,1083.8 825.0,1056.2 863.2,1041.8 901.5,1049.5 939.7,1063.9 977.9,1072.8 1016.2,1066.1 1054.4,1062.8 1092.6,1051.8 1130.9,1054.0 1169.1,1016.4 1207.4,944.5 1245.6,838.4 1283.8,752.2 1322.1,638.3 1360.3,564.2 1398.5,494.6 1436.8,497.9 1475.0,396.2" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="175.0,1180.0 213.2,1180.0 251.5,1180.0 289.7,1180.0 327.9,1180.0 366.2,1180.0 404.4,1180.0 442.6,1180.0 480.9,1180.0 519.1,1176.7 557.4,1160.1 595.6,1160.1 633.8,1143.5 672.1,1170.0 710.3,1110.3 748.5,1093.8 786.8,1047.3 825.0,1027.4 863.2,1050.7 901.5,1070.5 939.7,1070.5 977.9,1077.2 1016.2,1050.7 1054.4,1060.6 1092.6,1044.0 1130.9,1057.3 1169.1,947.8 1207.4,828.4 1245.6,738.9 1283.8,689.1 1322.1,486.8 1360.3,516.7 1398.5,480.2 1436.8,496.8 1475.0,211.5" fill="none" stroke="#7b2cbf" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="175.0" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="213.2" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="251.5" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="289.7" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="327.9" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="366.2" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="404.4" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="442.6" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="480.9" cy="1180.0" r="4" fill="#9aa7b2"/>
+<circle cx="519.1" cy="1178.9" r="4" fill="#9aa7b2"/>
+<circle cx="557.4" cy="1172.3" r="4" fill="#9aa7b2"/>
+<circle cx="595.6" cy="1165.6" r="4" fill="#9aa7b2"/>
+<circle cx="633.8" cy="1154.6" r="4" fill="#9aa7b2"/>
+<circle cx="672.1" cy="1157.9" r="4" fill="#9aa7b2"/>
+<circle cx="710.3" cy="1141.3" r="4" fill="#9aa7b2"/>
+<circle cx="748.5" cy="1124.7" r="4" fill="#9aa7b2"/>
+<circle cx="786.8" cy="1083.8" r="4" fill="#9aa7b2"/>
+<circle cx="825.0" cy="1056.2" r="4" fill="#9aa7b2"/>
+<circle cx="863.2" cy="1041.8" r="4" fill="#9aa7b2"/>
+<circle cx="901.5" cy="1049.5" r="4" fill="#9aa7b2"/>
+<circle cx="939.7" cy="1063.9" r="4" fill="#9aa7b2"/>
+<circle cx="977.9" cy="1072.8" r="4" fill="#9aa7b2"/>
+<circle cx="1016.2" cy="1066.1" r="4" fill="#9aa7b2"/>
+<circle cx="1054.4" cy="1062.8" r="4" fill="#9aa7b2"/>
+<circle cx="1092.6" cy="1051.8" r="4" fill="#9aa7b2"/>
+<circle cx="1130.9" cy="1054.0" r="4" fill="#9aa7b2"/>
+<circle cx="1169.1" cy="1016.4" r="4" fill="#9aa7b2"/>
+<circle cx="1207.4" cy="944.5" r="4" fill="#9aa7b2"/>
+<circle cx="1245.6" cy="838.4" r="4" fill="#9aa7b2"/>
+<circle cx="1283.8" cy="752.2" r="4" fill="#9aa7b2"/>
+<circle cx="1322.1" cy="638.3" r="4" fill="#9aa7b2"/>
+<circle cx="1360.3" cy="564.2" r="4" fill="#9aa7b2"/>
+<circle cx="1398.5" cy="494.6" r="4" fill="#9aa7b2"/>
+<circle cx="1436.8" cy="497.9" r="4" fill="#9aa7b2"/>
+<circle cx="1475.0" cy="396.2" r="4" fill="#9aa7b2"/>
+<circle cx="175.0" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="213.2" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="251.5" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="289.7" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="327.9" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="366.2" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="404.4" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="442.6" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="480.9" cy="1180.0" r="5" fill="#7b2cbf"/>
+<circle cx="519.1" cy="1176.7" r="5" fill="#7b2cbf"/>
+<circle cx="557.4" cy="1160.1" r="5" fill="#7b2cbf"/>
+<circle cx="595.6" cy="1160.1" r="5" fill="#7b2cbf"/>
+<circle cx="633.8" cy="1143.5" r="5" fill="#7b2cbf"/>
+<circle cx="672.1" cy="1170.0" r="5" fill="#7b2cbf"/>
+<circle cx="710.3" cy="1110.3" r="5" fill="#7b2cbf"/>
+<circle cx="748.5" cy="1093.8" r="5" fill="#7b2cbf"/>
+<circle cx="786.8" cy="1047.3" r="5" fill="#7b2cbf"/>
+<circle cx="825.0" cy="1027.4" r="5" fill="#7b2cbf"/>
+<circle cx="863.2" cy="1050.7" r="5" fill="#7b2cbf"/>
+<circle cx="901.5" cy="1070.5" r="5" fill="#7b2cbf"/>
+<circle cx="939.7" cy="1070.5" r="5" fill="#7b2cbf"/>
+<circle cx="977.9" cy="1077.2" r="5" fill="#7b2cbf"/>
+<circle cx="1016.2" cy="1050.7" r="5" fill="#7b2cbf"/>
+<circle cx="1054.4" cy="1060.6" r="5" fill="#7b2cbf"/>
+<circle cx="1092.6" cy="1044.0" r="5" fill="#7b2cbf"/>
+<circle cx="1130.9" cy="1057.3" r="5" fill="#7b2cbf"/>
+<circle cx="1169.1" cy="947.8" r="5" fill="#7b2cbf"/>
+<circle cx="1207.4" cy="828.4" r="5" fill="#7b2cbf"/>
+<circle cx="1245.6" cy="738.9" r="5" fill="#7b2cbf"/>
+<circle cx="1283.8" cy="689.1" r="5" fill="#7b2cbf"/>
+<circle cx="1322.1" cy="486.8" r="5" fill="#7b2cbf"/>
+<circle cx="1360.3" cy="516.7" r="5" fill="#7b2cbf"/>
+<circle cx="1398.5" cy="480.2" r="5" fill="#7b2cbf"/>
+<circle cx="1436.8" cy="496.8" r="5" fill="#7b2cbf"/>
+<circle cx="1475.0" cy="211.5" r="5" fill="#7b2cbf"/>
+<line x1="150" y1="1180" x2="1500" y2="1180" stroke="#394553" stroke-width="2"/>
+<line x1="150" y1="185" x2="150" y2="1180" stroke="#394553" stroke-width="2"/>
+<text x="825.0" y="1242" text-anchor="middle" class="axis-label">Study Start Year</text>
+<text x="58" y="682.5" text-anchor="middle" class="axis-label" transform="rotate(-90 58 682.5)">Number of US &amp; China Involved Studies</text>
+<line x1="770" y1="145" x2="825" y2="145" stroke="#7b2cbf" stroke-width="5"/><text x="840" y="150" class="legend">Annual US &amp; China Involved studies</text>
+<line x1="1220" y1="145" x2="1275" y2="145" stroke="#9aa7b2" stroke-width="4"/><text x="1290" y="150" class="legend">3-year moving average</text>
+<text x="60" y="1282" class="footnote">*Figures include complete calendar years 1991–2025. Calendar year 2026 was incomplete at the data cutoff and is therefore not shown.</text>
 </svg>

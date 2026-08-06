@@ -178,7 +178,7 @@ def footprint_chart_svg(rows: list[dict], path: Path) -> None:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect width="{width}" height="{height}" fill="#fff"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:18px}.tick{font-size:16px}.legend{font-size:13px}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:26px}.tick{font-size:26px}.legend{font-size:20px}</style>',
         '<text x="800" y="55" text-anchor="middle" class="title">China-Involved Study Footprint by Year, 2020-2025</text>',
     ]
     for value in range(0, y_max + 1, y_step):
@@ -205,17 +205,17 @@ def footprint_chart_svg(rows: list[dict], path: Path) -> None:
             parts.append(
                 f'<circle cx="{x(row["Year"]):.1f}" cy="{y(row[category]):.1f}" r="8" fill="{color}"/>'
             )
-    legend_x, legend_y, legend_w, legend_h = left + 24, top + 8, 365, 88
+    legend_x, legend_y, legend_w, legend_h = left + 24, top + 4, 500, 108
     parts.append(
         f'<rect x="{legend_x}" y="{legend_y}" width="{legend_w}" height="{legend_h}" fill="#fff" stroke="#9b9b9b"/>'
     )
     for index, category in enumerate(FOOTPRINT_ORDER):
-        yy = legend_y + 22 + index * 23
+        yy = legend_y + 26 + index * 31
         color = FOOTPRINT_COLORS[category]
         parts += [
             f'<line x1="{legend_x+12}" y1="{yy}" x2="{legend_x+42}" y2="{yy}" stroke="{color}" stroke-width="4"/>',
             f'<circle cx="{legend_x+27}" cy="{yy}" r="4.5" fill="{color}"/>',
-            f'<text x="{legend_x+52}" y="{yy+4}" class="legend">{html.escape(category)}</text>',
+            f'<text x="{legend_x+52}" y="{yy+6}" class="legend">{html.escape(category)}</text>',
         ]
     parts += [
         f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="none" stroke="#000" stroke-width="2"/>',
@@ -253,7 +253,7 @@ def phase_pie_chart_svg(row: dict, path: Path) -> None:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect width="{width}" height="{height}" fill="#fff"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:27px;font-weight:700}.phase{font-size:23px;font-weight:700}.slice{font-size:18px;font-weight:700;fill:#fff}.legend{font-size:15px}.note{font-size:14px;fill:#4f5965}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:27px;font-weight:700}.phase{font-size:23px;font-weight:700}.slice{font-size:18px;font-weight:700;fill:#fff}.legend{font-size:22px}.note{font-size:14px;fill:#4f5965}</style>',
         '<text x="600" y="45" text-anchor="middle" class="title">China-Involved vs. Non China-Involved Studies by Phase</text>',
         f'<text x="600" y="80" text-anchor="middle" class="phase">2020-2025 — {html.escape(row["Phase Label"])}</text>',
         '<rect x="28" y="108" width="1144" height="710" fill="none" stroke="#000" stroke-width="2"/>',
@@ -273,12 +273,12 @@ def phase_pie_chart_svg(row: dict, path: Path) -> None:
             f'<text x="{label_x:.1f}" y="{label_y+20:.1f}" text-anchor="middle" class="slice">n={count:,}</text>',
         ]
         start_angle = end_angle
-    legend_x, legend_y = 760, 335
+    legend_x, legend_y = 700, 325
     parts.append(
-        f'<rect x="{legend_x}" y="{legend_y}" width="335" height="112" fill="#fff" stroke="#9b9b9b"/>'
+        f'<rect x="{legend_x}" y="{legend_y}" width="440" height="135" fill="#fff" stroke="#9b9b9b"/>'
     )
     for index, (label, count, color) in enumerate(slices):
-        yy = legend_y + 34 + index * 42
+        yy = legend_y + 41 + index * 51
         parts += [
             f'<rect x="{legend_x+18}" y="{yy-13}" width="22" height="22" fill="{color}"/>',
             f'<text x="{legend_x+54}" y="{yy+4}" class="legend">{label} (n={count:,})</text>',
@@ -299,19 +299,19 @@ def combined_phase_pies_svg(rows: list[dict], path: Path) -> None:
         raise ValueError(f"combined phase chart is missing rows: {', '.join(missing)}")
 
     width, height = 1600, 1200
-    panel_centers = ((570, 385), (1200, 385), (570, 895), (1200, 895))
+    panel_centers = ((570, 410), (1200, 410), (570, 895), (1200, 895))
     radius = 185
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect width="{width}" height="{height}" fill="#fff"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:30px;font-weight:700}.phase{font-size:23px;font-weight:700}.slice{font-size:16px;font-weight:700;fill:#fff}.legend{font-size:14px}.note{font-size:13px;fill:#4f5965}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:30px;font-weight:700}.phase{font-size:25px;font-weight:700}.slice{font-size:20px;font-weight:700;fill:#fff}.legend{font-size:21px}.note{font-size:20px;fill:#4f5965}</style>',
         '<text x="800" y="52" text-anchor="middle" class="title">China-Involved vs. Non China-Involved Studies by Phase, 2020-2025</text>',
         '<rect x="28" y="138" width="1544" height="1018" fill="none" stroke="#000" stroke-width="2"/>',
-        '<rect x="55" y="160" width="275" height="90" fill="#fff" stroke="#9b9b9b"/>',
-        f'<rect x="75" y="176" width="20" height="20" fill="{CHINA_COLOR}"/>',
-        '<text x="107" y="192" class="legend">China-Involved</text>',
-        f'<rect x="75" y="212" width="20" height="20" fill="{NON_CHINA_COLOR}"/>',
-        '<text x="107" y="228" class="legend">Non China-Involved</text>',
+        '<rect x="55" y="160" width="290" height="88" fill="#fff" stroke="#9b9b9b"/>',
+        f'<rect x="90" y="176" width="20" height="20" fill="{CHINA_COLOR}"/>',
+        '<text x="122" y="192" class="legend">China-Involved</text>',
+        f'<rect x="90" y="212" width="20" height="20" fill="{NON_CHINA_COLOR}"/>',
+        '<text x="122" y="228" class="legend">Non China-Involved</text>',
     ]
     for phase, (cx, cy) in zip(PHASE_ORDER[1:], panel_centers):
         row = selected[phase]

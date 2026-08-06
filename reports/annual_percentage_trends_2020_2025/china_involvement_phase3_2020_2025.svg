@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="850" viewBox="0 0 1200 850">
 <rect width="1200" height="850" fill="#fff"/>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:27px;font-weight:700}.phase{font-size:23px;font-weight:700}.slice{font-size:18px;font-weight:700;fill:#fff}.legend{font-size:15px}.note{font-size:14px;fill:#4f5965}</style>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:27px;font-weight:700}.phase{font-size:23px;font-weight:700}.slice{font-size:18px;font-weight:700;fill:#fff}.legend{font-size:22px}.note{font-size:14px;fill:#4f5965}</style>
 <text x="600" y="45" text-anchor="middle" class="title">China-Involved vs. Non China-Involved Studies by Phase</text>
 <text x="600" y="80" text-anchor="middle" class="phase">2020-2025 — Phase 3</text>
 <rect x="28" y="108" width="1144" height="710" fill="none" stroke="#000" stroke-width="2"/>
@@ -10,11 +10,11 @@
 <path d="M 385.0,445.0 L 568.4,622.2 A 255.0,255.0 0 1 1 385.0,190.0 Z" fill="#8da0ae" stroke="#fff" stroke-width="3"/>
 <text x="239.5" y="502.8" text-anchor="middle" class="slice">62.8%</text>
 <text x="239.5" y="526.8" text-anchor="middle" class="slice">n=3,049</text>
-<rect x="760" y="335" width="335" height="112" fill="#fff" stroke="#9b9b9b"/>
-<rect x="778" y="356" width="22" height="22" fill="#d55e00"/>
-<text x="814" y="373" class="legend">China-Involved (n=1,808)</text>
-<rect x="778" y="398" width="22" height="22" fill="#8da0ae"/>
-<text x="814" y="415" class="legend">Non China-Involved (n=3,049)</text>
-<text x="760" y="489" class="note">Total studies in this registered phase: 4,857</text>
+<rect x="700" y="325" width="440" height="135" fill="#fff" stroke="#9b9b9b"/>
+<rect x="718" y="353" width="22" height="22" fill="#d55e00"/>
+<text x="754" y="370" class="legend">China-Involved (n=1,808)</text>
+<rect x="718" y="404" width="22" height="22" fill="#8da0ae"/>
+<text x="754" y="421" class="legend">Non China-Involved (n=3,049)</text>
+<text x="700" y="479" class="note">Total studies in this registered phase: 4,857</text>
 <text x="52" y="795" class="note">A study registered in multiple phases appears once in each applicable phase chart.</text>
 </svg>

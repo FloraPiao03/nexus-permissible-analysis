@@ -91,4 +91,7 @@
 ## Continent participation count 
 每项 study 在每个大洲最多计算一次。每个 study 如果在同一大洲有多个 location 也只计算一次。
 分母是当年开始的所有 study 数量，每个study 在每个大洲只计算一次，说明的是在这么多个 study 当中，有多少个涉及了这个大洲。
-（为什么不用所有 study 涉及的 country 数量为分母，对不同大洲，每个 study 每涉及一个 country 分子就
+> 为什么不用所有 study 涉及的 country 数量为分母，对不同大洲，每个 study 每涉及一个 country 分子就加一（也就是每个 study 如果涉及一个大洲内的多个国家就按照国家数量计算？是因为如果涉及国家的话，那是否还要按照国家内的 study site数量计算？
+
+在当前 ClinicalTrials.gov 研究范围内，industry-sponsored drug studies 的地点配置明显增加了对亚洲的覆盖；与此同时，北美洲和欧洲在年度研究组合中的相对参与比例下降。
+

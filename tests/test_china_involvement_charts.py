@@ -103,9 +103,10 @@ class ChinaInvolvementChartTests(unittest.TestCase):
             self.assertIn(f"{phase} (n=100)", svg)
         self.assertNotIn('fill="#f2f2f2"', svg)
         self.assertNotIn('rx="5"', svg)
-        self.assertIn('<rect x="55" y="160" width="275" height="90"', svg)
-        self.assertIn('<rect x="75" y="176" width="20" height="20"', svg)
-        self.assertIn('<rect x="75" y="212" width="20" height="20"', svg)
+        self.assertIn('.note{font-size:20px', svg)
+        self.assertIn('<rect x="55" y="160" width="290" height="88"', svg)
+        self.assertIn('<rect x="90" y="176" width="20" height="20"', svg)
+        self.assertIn('<rect x="90" y="212" width="20" height="20"', svg)
 
 
 if __name__ == "__main__":

@@ -441,7 +441,7 @@ def completed_chart_rows(rows: list[dict], latest_complete_year: int) -> list[di
 
 def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     rows = completed_chart_rows(rows, latest_complete_year)
-    width, height = 1600, 1600
+    width, height = 1600, 1200
     left, right, top, bottom = 120, 70, 175, 120
     plot_w, plot_h = width - left - right, height - top - bottom
     years = [row["Year"] for row in rows]
@@ -457,7 +457,7 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}.footnote{font-size:13px;fill:#556273;font-style:italic}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
         f'<text x="800" y="48" text-anchor="middle" class="title">Annual Geographic Breadth of Industry-Sponsored Clinical Trials ({years[0]}–{years[-1]})*</text>',
         '<text x="800" y="82" text-anchor="middle" class="subtitle">Interventional studies with Lead Sponsor Class = INDUSTRY and at least one DRUG intervention</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
@@ -466,12 +466,12 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     for value in range(0, y_max + 1, y_step):
         yy = y(value)
         parts += [f'<line x1="{left}" y1="{yy:.1f}" x2="{width-right}" y2="{yy:.1f}" stroke="#dfe5eb" stroke-width="1"/>',
-                  f'<text x="{left-18}" y="{yy+5:.1f}" text-anchor="end" class="axis">{value}</text>']
+                  f'<text x="{left-18}" y="{yy+5:.1f}" text-anchor="end" class="axis-tick">{value}</text>']
     for year in years:
         if year == years[0] or year == years[-1] or year % 5 == 0:
             xx = x(year)
             parts += [f'<line x1="{xx:.1f}" y1="{top+plot_h}" x2="{xx:.1f}" y2="{top+plot_h+7}" stroke="#4d5966"/>',
-                      f'<text x="{xx:.1f}" y="{top+plot_h+30}" text-anchor="middle" class="axis">{year}</text>']
+                      f'<text x="{xx:.1f}" y="{top+plot_h+30}" text-anchor="middle" class="axis-tick">{year}</text>']
     parts += [
         f'<line x1="{x(2000):.1f}" y1="{top}" x2="{x(2000):.1f}" y2="{top+plot_h}" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>',
         f'<text x="{x(2000)+18:.1f}" y="{top+25}" class="small">ClinicalTrials.gov launched (2000)</text>',
@@ -487,11 +487,11 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
             f'<circle cx="{x(year):.1f}" cy="{y(value):.1f}" r="5" fill="#146c94"/>'
             for year, value in zip(years, annual)
         ),
-        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis">Study Start Year</text>',
-        f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Number of Unique Countries Involved</text>',
-        f'<line x1="{width-520}" y1="140" x2="{width-465}" y2="140" stroke="#146c94" stroke-width="5"/><text x="{width-450}" y="145" class="legend">Annual active countries</text>',
-        f'<line x1="{width-270}" y1="140" x2="{width-215}" y2="140" stroke="#9aa7b2" stroke-width="4"/><text x="{width-200}" y="145" class="legend">3-year rolling</text>',
-        f'<text x="{left}" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>',
+        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis-label">Study Start Year</text>',
+        f'<text x="42" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis-label" transform="rotate(-90 42 {top+plot_h/2:.1f})">Number of Unique Countries Involved</text>',
+        f'<line x1="{width-600}" y1="140" x2="{width-545}" y2="140" stroke="#146c94" stroke-width="5"/><text x="{width-530}" y="145" class="legend">Annual active countries</text>',
+        f'<line x1="{width-280}" y1="140" x2="{width-225}" y2="140" stroke="#9aa7b2" stroke-width="4"/><text x="{width-210}" y="145" class="legend">3-year rolling</text>',
+        f'<text x="60" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>',
         '</svg>',
     ]
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
@@ -499,7 +499,7 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
 
 def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     rows = completed_chart_rows(rows, latest_complete_year)
-    width, height = 1600, 1600
+    width, height = 1600, 1300
     left, right, top, bottom = 120, 70, 220, 120
     plot_w, plot_h = width - left - right, height - top - bottom
     years = sorted({row["Year"] for row in rows})
@@ -527,7 +527,7 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:14px}.footnote{font-size:13px;fill:#556273;font-style:italic}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
         f'<text x="800" y="48" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Clinical Trials ({years[0]}–{years[-1]})*</text>',
         '<text x="800" y="82" text-anchor="middle" class="subtitle">Share of all eligible studies with a registered location in each continent; non-exclusive study-level participation</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
@@ -538,14 +538,14 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
         yy = y(value)
         parts += [
             f'<line x1="{left}" y1="{yy:.1f}" x2="{width-right}" y2="{yy:.1f}" stroke="#dfe5eb" stroke-width="1"/>',
-            f'<text x="{left-18}" y="{yy+5:.1f}" text-anchor="end" class="axis">{value:.0%}</text>',
+            f'<text x="{left-18}" y="{yy+5:.1f}" text-anchor="end" class="axis-tick">{value:.0%}</text>',
         ]
     for year in years:
         if year == years[0] or year == years[-1] or year % 5 == 0:
             xx = x(year)
             parts += [
                 f'<line x1="{xx:.1f}" y1="{top+plot_h}" x2="{xx:.1f}" y2="{top+plot_h+7}" stroke="#4d5966"/>',
-                f'<text x="{xx:.1f}" y="{top+plot_h+30}" text-anchor="middle" class="axis">{year}</text>',
+                f'<text x="{xx:.1f}" y="{top+plot_h+30}" text-anchor="middle" class="axis-tick">{year}</text>',
             ]
     for continent in CONTINENT_ORDER:
         points = " ".join(
@@ -564,8 +564,8 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
         f'<text x="{x(2000)+18:.1f}" y="{top+25}" class="small">ClinicalTrials.gov launched (2000)</text>',
         f'<line x1="{left}" y1="{top+plot_h}" x2="{width-right}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
-        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis">Study Start Year</text>',
-        f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Percentage of All Eligible Studies</text>',
+        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis-label">Study Start Year</text>',
+        f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis-label" transform="rotate(-90 34 {top+plot_h/2:.1f})">Percentage of All Eligible Studies</text>',
     ]
     for index, continent in enumerate(CONTINENT_ORDER):
         legend_x = 210 + (index % 3) * 430
@@ -575,7 +575,7 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
             f'<text x="{legend_x+70}" y="{legend_y+5}" class="legend">{continent}</text>',
         ]
     parts.append(
-        f'<text x="{left}" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>'
+        f'<text x="60" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>'
     )
     parts.append("</svg>")
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
@@ -583,8 +583,8 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
 
 def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     rows = completed_chart_rows(rows, latest_complete_year)
-    width, height = 1600, 1600
-    left, right, top, bottom = 120, 70, 185, 120
+    width, height = 1600, 1300
+    left, right, top, bottom = 150, 100, 185, 120
     plot_w, plot_h = width - left - right, height - top - bottom
     years = [row["Year"] for row in rows]
     counts = [row["NEXUS Studies"] for row in rows]
@@ -592,14 +592,15 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
     maximum = max(counts + moving + [1])
     y_step = max(10, int(math.ceil(maximum / 6 / 10.0) * 10))
     y_max = int(math.ceil(maximum / y_step) * y_step)
-    x = lambda year: left + (year - years[0]) / max(1, years[-1] - years[0]) * plot_w
+    x_padding = 25
+    x = lambda year: left + x_padding + (year - years[0]) / max(1, years[-1] - years[0]) * (plot_w - 2 * x_padding)
     y = lambda value: top + plot_h - value / y_max * plot_h
     count_points = " ".join(f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, counts))
     moving_points = " ".join(f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, moving))
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:17px;fill:#556273}.axis{font-size:15px}.small{font-size:13px;fill:#687486}.legend{font-size:15px}.footnote{font-size:13px;fill:#556273;font-style:italic}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
         f'<text x="800" y="48" text-anchor="middle" class="title">Annual US &amp; China Involved Studies by Registered Study Start Year ({years[0]}–{years[-1]})*</text>',
         '<text x="800" y="82" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
@@ -609,14 +610,14 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
         yy = y(value)
         parts += [
             f'<line x1="{left}" y1="{yy:.1f}" x2="{width-right}" y2="{yy:.1f}" stroke="#dfe5eb" stroke-width="1"/>',
-            f'<text x="{left-18}" y="{yy+5:.1f}" text-anchor="end" class="axis">{value}</text>',
+            f'<text x="{left-18}" y="{yy+5:.1f}" text-anchor="end" class="axis-tick">{value}</text>',
         ]
     for year in years:
         if year == years[0] or year == years[-1] or year % 5 == 0:
             xx = x(year)
             parts += [
                 f'<line x1="{xx:.1f}" y1="{top+plot_h}" x2="{xx:.1f}" y2="{top+plot_h+7}" stroke="#4d5966"/>',
-                f'<text x="{xx:.1f}" y="{top+plot_h+30}" text-anchor="middle" class="axis">{year}</text>',
+                f'<text x="{xx:.1f}" y="{top+plot_h+30}" text-anchor="middle" class="axis-tick">{year}</text>',
             ]
     parts += [
         f'<line x1="{x(2000):.1f}" y1="{top}" x2="{x(2000):.1f}" y2="{top+plot_h}" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>',
@@ -633,11 +634,11 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
         ),
         f'<line x1="{left}" y1="{top+plot_h}" x2="{width-right}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
         f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="#394553" stroke-width="2"/>',
-        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis">Study Start Year</text>',
-        f'<text x="34" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 34 {top+plot_h/2:.1f})">Number of US &amp; China Involved Studies</text>',
-        f'<line x1="{width-650}" y1="145" x2="{width-595}" y2="145" stroke="#7b2cbf" stroke-width="5"/><text x="{width-580}" y="150" class="legend">Annual US &amp; China Involved studies</text>',
-        f'<line x1="{width-300}" y1="145" x2="{width-245}" y2="145" stroke="#9aa7b2" stroke-width="4"/><text x="{width-230}" y="150" class="legend">3-year moving average</text>',
-        f'<text x="{left}" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>',
+        f'<text x="{left+plot_w/2:.1f}" y="{height-58}" text-anchor="middle" class="axis-label">Study Start Year</text>',
+        f'<text x="58" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis-label" transform="rotate(-90 58 {top+plot_h/2:.1f})">Number of US &amp; China Involved Studies</text>',
+        f'<line x1="{width-830}" y1="145" x2="{width-775}" y2="145" stroke="#7b2cbf" stroke-width="5"/><text x="{width-760}" y="150" class="legend">Annual US &amp; China Involved studies</text>',
+        f'<line x1="{width-380}" y1="145" x2="{width-325}" y2="145" stroke="#9aa7b2" stroke-width="4"/><text x="{width-310}" y="150" class="legend">3-year moving average</text>',
+        f'<text x="60" y="{height-18}" class="footnote">*Figures include complete calendar years {years[0]}–{years[-1]}. Calendar year {latest_complete_year + 1} was incomplete at the data cutoff and is therefore not shown.</text>',
         "</svg>",
     ]
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
@@ -682,7 +683,7 @@ def focused_percentage_chart_svg(
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:18px}.tick{font-size:16px}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:26px}.tick{font-size:26px}</style>',
         f'<text x="{width/2:.1f}" y="55" text-anchor="middle" class="title">{title}</text>',
     ]
     displayed_tick_step = tick_step or y_step
