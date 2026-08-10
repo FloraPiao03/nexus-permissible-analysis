@@ -162,7 +162,9 @@ def nice_integer_axis(maximum: int) -> tuple[int, int]:
     return int(math.ceil(maximum / step) * step), step
 
 
-def footprint_chart_svg(rows: list[dict], path: Path) -> None:
+def footprint_chart_svg(rows: list[dict], path: Path, title: str | None = None) -> None:
+    if not rows:
+        raise ValueError("China-involvement footprint chart has no observations")
     width, height = 1600, 1000
     left, right, top, bottom = 140, 70, 115, 140
     plot_w, plot_h = width - left - right, height - top - bottom
@@ -179,7 +181,7 @@ def footprint_chart_svg(rows: list[dict], path: Path) -> None:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect width="{width}" height="{height}" fill="#fff"/>',
         '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:26px}.tick{font-size:26px}.legend{font-size:20px}</style>',
-        '<text x="800" y="55" text-anchor="middle" class="title">China-Involved Study Footprint by Year, 2020-2025</text>',
+        f'<text x="800" y="55" text-anchor="middle" class="title">{html.escape(title or f"China-Involved Study Footprint by Year, {years[0]}-{years[-1]}")}</text>',
     ]
     for value in range(0, y_max + 1, y_step):
         yy = y(value)
@@ -188,11 +190,12 @@ def footprint_chart_svg(rows: list[dict], path: Path) -> None:
             f'<text x="{left-18}" y="{yy+6:.1f}" text-anchor="end" class="tick">{value:,}</text>',
         ]
     for year in years:
-        xx = x(year)
-        parts += [
-            f'<line x1="{xx:.1f}" y1="{top+plot_h}" x2="{xx:.1f}" y2="{top+plot_h+8}" stroke="#000" stroke-width="2"/>',
-            f'<text x="{xx:.1f}" y="{top+plot_h+34}" text-anchor="middle" class="tick">{year}</text>',
-        ]
+        if len(years) <= 10 or year == years[0] or year == years[-1] or year % 5 == 0:
+            xx = x(year)
+            parts += [
+                f'<line x1="{xx:.1f}" y1="{top+plot_h}" x2="{xx:.1f}" y2="{top+plot_h+8}" stroke="#000" stroke-width="2"/>',
+                f'<text x="{xx:.1f}" y="{top+plot_h+34}" text-anchor="middle" class="tick">{year}</text>',
+            ]
     for category in FOOTPRINT_ORDER:
         color = FOOTPRINT_COLORS[category]
         points = " ".join(
@@ -203,7 +206,7 @@ def footprint_chart_svg(rows: list[dict], path: Path) -> None:
         )
         for row in rows:
             parts.append(
-                f'<circle cx="{x(row["Year"]):.1f}" cy="{y(row[category]):.1f}" r="8" fill="{color}"/>'
+                f'<circle cx="{x(row["Year"]):.1f}" cy="{y(row[category]):.1f}" r="{5 if len(years) > 10 else 8}" fill="{color}"/>'
             )
     legend_x, legend_y, legend_w, legend_h = left + 24, top + 4, 500, 108
     parts.append(
@@ -218,6 +221,60 @@ def footprint_chart_svg(rows: list[dict], path: Path) -> None:
             f'<text x="{legend_x+52}" y="{yy+6}" class="legend">{html.escape(category)}</text>',
         ]
     parts += [
+        f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="none" stroke="#000" stroke-width="2"/>',
+        f'<text x="{left+plot_w/2:.1f}" y="{height-48}" text-anchor="middle" class="axis">Start Year</text>',
+        f'<text x="38" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 38 {top+plot_h/2:.1f})">Number of Studies</text>',
+        '</svg>',
+    ]
+    path.write_text("\n".join(parts) + "\n", encoding="utf-8")
+
+
+def china_involved_studies_chart_svg(
+    rows: list[dict], path: Path, title: str | None = None,
+) -> None:
+    """Render the annual sum of the three mutually exclusive China-footprint groups."""
+    if not rows:
+        raise ValueError("China-involved studies chart has no observations")
+    width, height = 1600, 1000
+    left, right, top, bottom = 140, 70, 115, 140
+    plot_w, plot_h = width - left - right, height - top - bottom
+    years = [row["Year"] for row in rows]
+    values = [row["All China-Involved Studies"] for row in rows]
+    if years != sorted(years) or len(years) != len(set(years)):
+        raise ValueError("China-involved chart years must be unique and sorted")
+    y_max, y_step = nice_integer_axis(max(values))
+    x_padding = 85
+    inner_width = plot_w - 2 * x_padding
+    x = lambda year: left + x_padding + (
+        (year - years[0]) / max(1, years[-1] - years[0]) * inner_width
+    )
+    y = lambda value: top + plot_h - value / y_max * plot_h
+    points = " ".join(
+        f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, values)
+    )
+    chart_title = title or f"China-Involved Studies by Year, {years[0]}-{years[-1]}"
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        f'<rect width="{width}" height="{height}" fill="#fff"/>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis,.tick{font-size:26px}</style>',
+        f'<text x="800" y="55" text-anchor="middle" class="title">{html.escape(chart_title)}</text>',
+    ]
+    for value in range(0, y_max + 1, y_step):
+        yy = y(value)
+        parts += [
+            f'<line x1="{left}" y1="{yy:.1f}" x2="{width-right}" y2="{yy:.1f}" stroke="#d8dde3"/>',
+            f'<text x="{left-18}" y="{yy+6:.1f}" text-anchor="end" class="tick">{value:,}</text>',
+        ]
+    for year in years:
+        if len(years) <= 10 or year == years[0] or year == years[-1] or year % 5 == 0:
+            xx = x(year)
+            parts += [
+                f'<line x1="{xx:.1f}" y1="{top+plot_h}" x2="{xx:.1f}" y2="{top+plot_h+8}" stroke="#000" stroke-width="2"/>',
+                f'<text x="{xx:.1f}" y="{top+plot_h+34}" text-anchor="middle" class="tick">{year}</text>',
+            ]
+    parts += [
+        f'<polyline points="{points}" fill="none" stroke="#146c94" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>',
+        *(f'<circle cx="{x(year):.1f}" cy="{y(value):.1f}" r="{5 if len(years) > 10 else 8}" fill="#146c94"/>' for year, value in zip(years, values)),
         f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="none" stroke="#000" stroke-width="2"/>',
         f'<text x="{left+plot_w/2:.1f}" y="{height-48}" text-anchor="middle" class="axis">Start Year</text>',
         f'<text x="38" y="{top+plot_h/2:.1f}" text-anchor="middle" class="axis" transform="rotate(-90 38 {top+plot_h/2:.1f})">Number of Studies</text>',

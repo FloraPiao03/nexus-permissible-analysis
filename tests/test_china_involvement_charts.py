@@ -3,8 +3,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from china_involvement_charts import (
-    aggregate_china_involvement, combined_phase_pies_svg, footprint_chart_svg,
-    phase_pie_chart_svg,
+    aggregate_china_involvement, china_involved_studies_chart_svg,
+    combined_phase_pies_svg, footprint_chart_svg, phase_pie_chart_svg,
 )
 
 
@@ -79,6 +79,22 @@ class ChinaInvolvementChartTests(unittest.TestCase):
         self.assertIn("Non China-Involved (n=75)", svg)
         self.assertIn('fill="#fff" stroke="#9b9b9b"', svg)
         self.assertNotIn('rx="6"', svg)
+
+    def test_all_china_involved_chart_uses_total_series_and_sparse_long_ticks(self):
+        rows = [
+            {"Year": year, "All China-Involved Studies": year - 1990}
+            for year in range(1991, 2026)
+        ]
+        with TemporaryDirectory() as temporary_directory:
+            path = Path(temporary_directory) / "all_china.svg"
+            china_involved_studies_chart_svg(rows, path)
+            svg = path.read_text(encoding="utf-8")
+        self.assertEqual(svg.count("<polyline "), 1)
+        self.assertEqual(svg.count("<circle "), 35)
+        self.assertIn(">1991</text>", svg)
+        self.assertIn(">2000</text>", svg)
+        self.assertIn(">2025</text>", svg)
+        self.assertNotIn(">1992</text>", svg)
 
     def test_combined_phase_chart_contains_phase1_to_phase4_only(self):
         rows = []

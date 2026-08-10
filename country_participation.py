@@ -647,7 +647,8 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
 def focused_percentage_chart_svg(
     rows: list[dict], path: Path, *, title: str, y_axis_label: str,
     percentage_field: str, color: str, tick_step: float | None = None,
-    show_tick_percent_sign: bool = True,
+    show_tick_percent_sign: bool = True, y_min_override: float | None = None,
+    y_max_override: float | None = None,
 ) -> None:
     """Render a focused annual-percentage chart with padded endpoints and a full frame."""
     if not rows:
@@ -668,6 +669,10 @@ def focused_percentage_chart_svg(
     y_step = 0.02 if value_span > 0.04 else 0.01
     y_min = math.floor(minimum / y_step) * y_step
     y_max = math.ceil(maximum / y_step) * y_step
+    if y_min_override is not None:
+        y_min = y_min_override
+    if y_max_override is not None:
+        y_max = y_max_override
     if math.isclose(y_min, y_max):
         y_min = max(0.0, y_min - y_step)
         y_max += y_step
@@ -1140,8 +1145,10 @@ def main(argv: list[str] | None = None) -> int:
         y_axis_label="US &amp; China Involved Studies (%)",
         percentage_field="US & China Involved Study Percentage",
         color="#146c94",
-        tick_step=0.0025,
+        tick_step=0.02,
         show_tick_percent_sign=False,
+        y_min_override=0.0,
+        y_max_override=0.10,
     )
     svg_to_png(
         us_china_svg_path,
