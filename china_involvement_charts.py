@@ -181,7 +181,7 @@ def footprint_chart_svg(rows: list[dict], path: Path, title: str | None = None) 
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect width="{width}" height="{height}" fill="#fff"/>',
         '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:26px}.tick{font-size:26px}.legend{font-size:20px}</style>',
-        f'<text x="800" y="55" text-anchor="middle" class="title">{html.escape(title or f"China-Involved Study Footprint by Year, {years[0]}-{years[-1]}")}</text>',
+        f'<text x="800" y="55" text-anchor="middle" class="title">{html.escape(title or f"China-Involved Studies by Year and Category, {years[0]}-{years[-1]}")}</text>',
     ]
     for value in range(0, y_max + 1, y_step):
         yy = y(value)
