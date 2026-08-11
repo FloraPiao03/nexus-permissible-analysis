@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1300" viewBox="0 0 1600 1300">
 <rect x="0" y="0" width="1600" height="1300" fill="#ffffff" fill-opacity="1"/>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.snapshot{font-size:18px;font-weight:400;fill:#556273}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>
 <text x="800" y="48" text-anchor="middle" class="title">Annual US &amp; China Involved Studies by Registered Study Start Year (1991–2025)*</text>
-<text x="800" y="82" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>
+<text x="800" y="78" text-anchor="middle" class="snapshot">[Snapshot: 2026-07-30 15:52 UTC+8]</text>
+<text x="800" y="110" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>
 <rect x="150" y="185" width="369.1" height="995" fill="#f3f0e8"/>
 <text x="501.1" y="210" text-anchor="end" class="small">Retrospectively registered period</text>
 <line x1="150" y1="1180.0" x2="1500" y2="1180.0" stroke="#dfe5eb" stroke-width="1"/>
@@ -37,8 +38,8 @@
 <text x="1475.0" y="1210" text-anchor="middle" class="axis-tick">2025</text>
 <line x1="519.1" y1="185" x2="519.1" y2="1180" stroke="#7a6f55" stroke-width="2" stroke-dasharray="7 6"/>
 <text x="537.1" y="210" class="small">ClinicalTrials.gov launched (2000)</text>
-<polyline points="175.0,1180.0 213.2,1180.0 251.5,1180.0 289.7,1180.0 327.9,1180.0 366.2,1180.0 404.4,1180.0 442.6,1180.0 480.9,1180.0 519.1,1178.9 557.4,1172.3 595.6,1165.6 633.8,1154.6 672.1,1157.9 710.3,1141.3 748.5,1124.7 786.8,1083.8 825.0,1056.2 863.2,1041.8 901.5,1049.5 939.7,1063.9 977.9,1072.8 1016.2,1066.1 1054.4,1062.8 1092.6,1051.8 1130.9,1054.0 1169.1,1016.4 1207.4,944.5 1245.6,838.4 1283.8,752.2 1322.1,638.3 1360.3,564.2 1398.5,494.6 1436.8,497.9 1475.0,396.2" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="175.0,1180.0 213.2,1180.0 251.5,1180.0 289.7,1180.0 327.9,1180.0 366.2,1180.0 404.4,1180.0 442.6,1180.0 480.9,1180.0 519.1,1176.7 557.4,1160.1 595.6,1160.1 633.8,1143.5 672.1,1170.0 710.3,1110.3 748.5,1093.8 786.8,1047.3 825.0,1027.4 863.2,1050.7 901.5,1070.5 939.7,1070.5 977.9,1077.2 1016.2,1050.7 1054.4,1060.6 1092.6,1044.0 1130.9,1057.3 1169.1,947.8 1207.4,828.4 1245.6,738.9 1283.8,689.1 1322.1,486.8 1360.3,516.7 1398.5,480.2 1436.8,496.8 1475.0,211.5" fill="none" stroke="#7b2cbf" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="175.0,1180.0 213.2,1180.0 251.5,1180.0 289.7,1180.0 327.9,1180.0 366.2,1180.0 404.4,1180.0 442.6,1180.0 480.9,1180.0 519.1,1178.9 557.4,1172.3 595.6,1165.6 633.8,1154.6 672.1,1157.9 710.3,1141.3 748.5,1124.7 786.8,1083.8 825.0,1056.2 863.2,1041.8 901.5,1049.5 939.7,1063.9 977.9,1072.8 1016.2,1066.1 1054.4,1062.8 1092.6,1051.8 1130.9,1054.0 1169.1,1016.4 1207.4,944.5 1245.6,838.4 1283.8,752.2 1322.1,639.4 1360.3,565.3 1398.5,494.6 1436.8,497.9 1475.0,393.9" fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="175.0,1180.0 213.2,1180.0 251.5,1180.0 289.7,1180.0 327.9,1180.0 366.2,1180.0 404.4,1180.0 442.6,1180.0 480.9,1180.0 519.1,1176.7 557.4,1160.1 595.6,1160.1 633.8,1143.5 672.1,1170.0 710.3,1110.3 748.5,1093.8 786.8,1047.3 825.0,1027.4 863.2,1050.7 901.5,1070.5 939.7,1070.5 977.9,1077.2 1016.2,1050.7 1054.4,1060.6 1092.6,1044.0 1130.9,1057.3 1169.1,947.8 1207.4,828.4 1245.6,738.9 1283.8,689.1 1322.1,490.1 1360.3,516.7 1398.5,476.9 1436.8,500.1 1475.0,204.9" fill="none" stroke="#7b2cbf" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
 <circle cx="175.0" cy="1180.0" r="4" fill="#9aa7b2"/>
 <circle cx="213.2" cy="1180.0" r="4" fill="#9aa7b2"/>
 <circle cx="251.5" cy="1180.0" r="4" fill="#9aa7b2"/>
@@ -69,11 +70,11 @@
 <circle cx="1207.4" cy="944.5" r="4" fill="#9aa7b2"/>
 <circle cx="1245.6" cy="838.4" r="4" fill="#9aa7b2"/>
 <circle cx="1283.8" cy="752.2" r="4" fill="#9aa7b2"/>
-<circle cx="1322.1" cy="638.3" r="4" fill="#9aa7b2"/>
-<circle cx="1360.3" cy="564.2" r="4" fill="#9aa7b2"/>
+<circle cx="1322.1" cy="639.4" r="4" fill="#9aa7b2"/>
+<circle cx="1360.3" cy="565.3" r="4" fill="#9aa7b2"/>
 <circle cx="1398.5" cy="494.6" r="4" fill="#9aa7b2"/>
 <circle cx="1436.8" cy="497.9" r="4" fill="#9aa7b2"/>
-<circle cx="1475.0" cy="396.2" r="4" fill="#9aa7b2"/>
+<circle cx="1475.0" cy="393.9" r="4" fill="#9aa7b2"/>
 <circle cx="175.0" cy="1180.0" r="5" fill="#7b2cbf"/>
 <circle cx="213.2" cy="1180.0" r="5" fill="#7b2cbf"/>
 <circle cx="251.5" cy="1180.0" r="5" fill="#7b2cbf"/>
@@ -104,11 +105,11 @@
 <circle cx="1207.4" cy="828.4" r="5" fill="#7b2cbf"/>
 <circle cx="1245.6" cy="738.9" r="5" fill="#7b2cbf"/>
 <circle cx="1283.8" cy="689.1" r="5" fill="#7b2cbf"/>
-<circle cx="1322.1" cy="486.8" r="5" fill="#7b2cbf"/>
+<circle cx="1322.1" cy="490.1" r="5" fill="#7b2cbf"/>
 <circle cx="1360.3" cy="516.7" r="5" fill="#7b2cbf"/>
-<circle cx="1398.5" cy="480.2" r="5" fill="#7b2cbf"/>
-<circle cx="1436.8" cy="496.8" r="5" fill="#7b2cbf"/>
-<circle cx="1475.0" cy="211.5" r="5" fill="#7b2cbf"/>
+<circle cx="1398.5" cy="476.9" r="5" fill="#7b2cbf"/>
+<circle cx="1436.8" cy="500.1" r="5" fill="#7b2cbf"/>
+<circle cx="1475.0" cy="204.9" r="5" fill="#7b2cbf"/>
 <line x1="150" y1="1180" x2="1500" y2="1180" stroke="#394553" stroke-width="2"/>
 <line x1="150" y1="185" x2="150" y2="1180" stroke="#394553" stroke-width="2"/>
 <text x="825.0" y="1242" text-anchor="middle" class="axis-label">Study Start Year</text>

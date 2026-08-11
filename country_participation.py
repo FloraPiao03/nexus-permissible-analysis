@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import html
 import json
 import math
 import re
@@ -12,7 +13,7 @@ import shutil
 import subprocess
 import tempfile
 from collections import Counter, defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -439,7 +440,10 @@ def completed_chart_rows(rows: list[dict], latest_complete_year: int) -> list[di
     return completed
 
 
-def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
+def chart_svg(
+    rows: list[dict], path: Path, latest_complete_year: int,
+    snapshot_label: str | None = None,
+) -> None:
     rows = completed_chart_rows(rows, latest_complete_year)
     width, height = 1600, 1200
     left, right, top, bottom = 120, 70, 175, 120
@@ -454,12 +458,18 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     y = lambda value: top + plot_h - value / y_max * plot_h
     annual_points = " ".join(f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, annual))
     rolling_points = " ".join(f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, rolling))
+    snapshot_annotation = (
+        f'<text x="800" y="78" text-anchor="middle" class="snapshot">[Snapshot: {html.escape(snapshot_label)}]</text>'
+        if snapshot_label else ""
+    )
+    subtitle_y = 110 if snapshot_label else 82
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.snapshot{font-size:18px;font-weight:400;fill:#556273}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
         f'<text x="800" y="48" text-anchor="middle" class="title">Annual Geographic Breadth of Industry-Sponsored Clinical Trials ({years[0]}–{years[-1]})*</text>',
-        '<text x="800" y="82" text-anchor="middle" class="subtitle">Interventional studies with Lead Sponsor Class = INDUSTRY and at least one DRUG intervention</text>',
+        snapshot_annotation,
+        f'<text x="800" y="{subtitle_y}" text-anchor="middle" class="subtitle">Interventional studies with Lead Sponsor Class = INDUSTRY and at least one DRUG intervention</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
         f'<text x="{x(2000)-18:.1f}" y="{top+25}" text-anchor="end" class="small">Retrospectively registered period</text>',
     ]
@@ -497,7 +507,10 @@ def chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
 
-def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
+def continent_chart_svg(
+    rows: list[dict], path: Path, latest_complete_year: int,
+    snapshot_label: str | None = None,
+) -> None:
     rows = completed_chart_rows(rows, latest_complete_year)
     width, height = 1600, 1300
     left, right, top, bottom = 120, 70, 220, 120
@@ -524,12 +537,18 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
         "South America": "#e69f00",
         "Oceania": "#6f63b6",
     }
+    snapshot_annotation = (
+        f'<text x="800" y="78" text-anchor="middle" class="snapshot">[Snapshot: {html.escape(snapshot_label)}]</text>'
+        if snapshot_label else ""
+    )
+    subtitle_y = 110 if snapshot_label else 82
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.snapshot{font-size:18px;font-weight:400;fill:#556273}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
         f'<text x="800" y="48" text-anchor="middle" class="title">Annual Continent Participation in Industry-Sponsored Clinical Trials ({years[0]}–{years[-1]})*</text>',
-        '<text x="800" y="82" text-anchor="middle" class="subtitle">Share of all eligible studies with a registered location in each continent; non-exclusive study-level participation</text>',
+        snapshot_annotation,
+        f'<text x="800" y="{subtitle_y}" text-anchor="middle" class="subtitle">Share of all eligible studies with a registered location in each continent; non-exclusive study-level participation</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
         f'<text x="{x(2000)-18:.1f}" y="{top+25}" text-anchor="end" class="small">Retrospectively registered period</text>',
     ]
@@ -581,7 +600,10 @@ def continent_chart_svg(rows: list[dict], path: Path, latest_complete_year: int)
     path.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
 
-def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> None:
+def nexus_chart_svg(
+    rows: list[dict], path: Path, latest_complete_year: int,
+    snapshot_label: str | None = None,
+) -> None:
     rows = completed_chart_rows(rows, latest_complete_year)
     width, height = 1600, 1300
     left, right, top, bottom = 150, 100, 185, 120
@@ -597,12 +619,18 @@ def nexus_chart_svg(rows: list[dict], path: Path, latest_complete_year: int) -> 
     y = lambda value: top + plot_h - value / y_max * plot_h
     count_points = " ".join(f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, counts))
     moving_points = " ".join(f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, moving))
+    snapshot_annotation = (
+        f'<text x="800" y="78" text-anchor="middle" class="snapshot">[Snapshot: {html.escape(snapshot_label)}]</text>'
+        if snapshot_label else ""
+    )
+    subtitle_y = 110 if snapshot_label else 82
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff" fill-opacity="1"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202936}.title{font-size:30px;font-weight:700}.snapshot{font-size:18px;font-weight:400;fill:#556273}.subtitle{font-size:24px;fill:#556273}.axis-label,.axis-tick{font-size:26px;font-weight:400}.small{font-size:20px;fill:#687486}.legend{font-size:22px}.footnote{font-size:20px;fill:#556273;font-style:italic}</style>',
         f'<text x="800" y="48" text-anchor="middle" class="title">Annual US &amp; China Involved Studies by Registered Study Start Year ({years[0]}–{years[-1]})*</text>',
-        '<text x="800" y="82" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>',
+        snapshot_annotation,
+        f'<text x="800" y="{subtitle_y}" text-anchor="middle" class="subtitle">Industry-sponsored Interventional DRUG-containing studies with both United States and China locations</text>',
         f'<rect x="{left}" y="{top}" width="{max(0, x(2000)-left):.1f}" height="{plot_h}" fill="#f3f0e8"/>',
         f'<text x="{x(2000)-18:.1f}" y="{top+25}" text-anchor="end" class="small">Retrospectively registered period</text>',
     ]
@@ -648,7 +676,7 @@ def focused_percentage_chart_svg(
     rows: list[dict], path: Path, *, title: str, y_axis_label: str,
     percentage_field: str, color: str, tick_step: float | None = None,
     show_tick_percent_sign: bool = True, y_min_override: float | None = None,
-    y_max_override: float | None = None,
+    y_max_override: float | None = None, snapshot_label: str | None = None,
 ) -> None:
     """Render a focused annual-percentage chart with padded endpoints and a full frame."""
     if not rows:
@@ -685,11 +713,15 @@ def focused_percentage_chart_svg(
     points = " ".join(
         f"{x(year):.1f},{y(value):.1f}" for year, value in zip(years, values)
     )
+    snapshot_suffix = (
+        f'<tspan class="snapshot"> [Snapshot: {html.escape(snapshot_label)}]</tspan>'
+        if snapshot_label else ""
+    )
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff"/>',
-        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.axis{font-size:26px}.tick{font-size:26px}</style>',
-        f'<text x="{width/2:.1f}" y="55" text-anchor="middle" class="title">{title}</text>',
+        '<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:31px;font-weight:700}.snapshot{font-size:19px;font-weight:400;fill:#555}.axis{font-size:26px}.tick{font-size:26px}</style>',
+        f'<text x="{width/2:.1f}" y="55" text-anchor="middle" class="title">{title}{snapshot_suffix}</text>',
     ]
     displayed_tick_step = tick_step or y_step
     if displayed_tick_step <= 0:
@@ -1029,7 +1061,13 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(f"output directory already exists and is not empty: {output_directory}")
     continent_mapping, continent_document = load_continent_mapping(args.continent_mapping)
 
-    snapshot_date = datetime.fromisoformat(manifest["harvest_timestamp_utc"].replace("Z", "+00:00")).date()
+    snapshot_datetime = datetime.fromisoformat(
+        manifest["harvest_timestamp_utc"].replace("Z", "+00:00")
+    )
+    snapshot_date = snapshot_datetime.date()
+    snapshot_label = snapshot_datetime.astimezone(
+        timezone(timedelta(hours=8))
+    ).strftime("%Y-%m-%d %H:%M UTC+8")
     reporting_end_year = snapshot_date.year
     seen: set[str] = set()
     observations = []
@@ -1105,13 +1143,21 @@ def main(argv: list[str] | None = None) -> int:
     write_summary(args.outdir / "country_participation_summary.md", result, metadata)
     write_workbook(args.outdir / "country_participation_analysis.xlsx", result, metadata)
     svg_path = args.outdir / "annual_country_participation_trend.svg"
-    chart_svg(result["annual_rows"], svg_path, metadata["latest_complete_year"])
+    chart_svg(
+        result["annual_rows"], svg_path, metadata["latest_complete_year"], snapshot_label
+    )
     svg_to_png(svg_path, args.outdir / "annual_country_participation_trend.png")
     continent_svg_path = args.outdir / "annual_continent_participation_trend.svg"
-    continent_chart_svg(result["continent_rows"], continent_svg_path, metadata["latest_complete_year"])
+    continent_chart_svg(
+        result["continent_rows"], continent_svg_path,
+        metadata["latest_complete_year"], snapshot_label,
+    )
     svg_to_png(continent_svg_path, args.outdir / "annual_continent_participation_trend.png")
     nexus_svg_path = args.outdir / "annual_nexus_studies_trend.svg"
-    nexus_chart_svg(result["nexus_rows"], nexus_svg_path, metadata["latest_complete_year"])
+    nexus_chart_svg(
+        result["nexus_rows"], nexus_svg_path,
+        metadata["latest_complete_year"], snapshot_label,
+    )
     svg_to_png(nexus_svg_path, args.outdir / "annual_nexus_studies_trend.png")
     focused_rows = [
         row for row in result["focused_percentage_rows"]
@@ -1132,6 +1178,7 @@ def main(argv: list[str] | None = None) -> int:
         color="#146c94",
         tick_step=0.01,
         show_tick_percent_sign=False,
+        snapshot_label=snapshot_label,
     )
     svg_to_png(
         multicountry_svg_path,
@@ -1149,6 +1196,7 @@ def main(argv: list[str] | None = None) -> int:
         show_tick_percent_sign=False,
         y_min_override=0.0,
         y_max_override=0.10,
+        snapshot_label=snapshot_label,
     )
     svg_to_png(
         us_china_svg_path,

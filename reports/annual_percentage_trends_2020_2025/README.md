@@ -6,9 +6,11 @@ All figures use the existing cohort:
 
 The year range is inclusive: 2020–2025 represents six complete Start Year cohorts. Locations are based only on registered values in `protocolSection.contactsLocationsModule.locations[].country`.
 
+All figures now use the same complete Phase-enabled snapshot `runs/run_20260730T061844Z`, harvested at `2026-07-30 15:52 UTC+8`.
+
 ## Charts 1–2: annual percentages
 
-These figures use the complete validated snapshot `runs/run_20260722T020135Z`.
+These figures use the complete Phase-enabled snapshot `runs/run_20260730T061844Z`.
 
 Each percentage is calculated separately for its Start Year. The denominator is all eligible studies starting in that year, including studies without usable registered location-country data.
 

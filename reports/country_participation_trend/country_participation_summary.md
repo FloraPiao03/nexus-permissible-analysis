@@ -8,13 +8,13 @@ Mixed DRUG-containing intervention combinations remain included. One unique NCT 
 
 ## Data source
 
-- Snapshot: `/Users/mac/Desktop/pfizerProj/nexus-permissible-analysis/runs/run_20260722T020135Z`
-- Snapshot date: **2026-07-22**
-- Eligible studies: **78,893**
+- Snapshot: `/Users/mac/Desktop/pfizerProj/nexus-permissible-analysis/runs/run_20260730T061844Z`
+- Snapshot date: **2026-07-30**
+- Eligible studies: **79,011**
 - Missing/malformed Start Date, excluded from year-specific calculations: **979**
-- No usable registered location country: **8,329** (retained in annual study counts when Start Year is valid; contributes no country)
+- No usable registered location country: **8,331** (retained in annual study counts when Start Year is valid; contributes no country)
 - Valid Start Year before 1991, outside primary period: **32**
-- Future Start Year after 2026, outside primary period: **52**
+- Future Start Year after 2026, outside primary period: **55**
 - Latest observed Start Year: **2050**
 - Latest complete reporting year: **2025**
 - 2026 is included and labeled **partial year**.
@@ -49,25 +49,25 @@ Mixed DRUG-containing intervention combinations remain included. One unique NCT 
 | 2014 | 3,255 | 8.94% | 99 | 122 | 148 | complete year |
 | 2015 | 3,196 | 8.54% | 103 | 121 | 149 | complete year |
 | 2016 | 3,103 | 8.73% | 93 | 119 | 152 | complete year |
-| 2017 | 3,020 | 2.85% | 103 | 118 | 153 | complete year |
-| 2018 | 3,170 | 2.11% | 108 | 123 | 156 | complete year |
+| 2017 | 3,020 | 2.88% | 103 | 118 | 153 | complete year |
+| 2018 | 3,171 | 2.11% | 108 | 123 | 156 | complete year |
 | 2019 | 3,264 | 2.70% | 97 | 125 | 157 | complete year |
-| 2020 | 3,337 | 4.02% | 91 | 119 | 157 | complete year |
-| 2021 | 4,079 | 3.75% | 102 | 112 | 158 | complete year |
+| 2020 | 3,338 | 4.01% | 91 | 119 | 157 | complete year |
+| 2021 | 4,081 | 3.75% | 102 | 112 | 158 | complete year |
 | 2022 | 3,708 | 3.94% | 105 | 114 | 161 | complete year |
-| 2023 | 3,583 | 4.13% | 94 | 115 | 161 | complete year |
+| 2023 | 3,584 | 4.10% | 94 | 115 | 161 | complete year |
 | 2024 | 3,574 | 5.46% | 105 | 118 | 162 | complete year |
-| 2025 | 3,784 | 6.95% | 85 | 112 | 163 | complete year |
-| 2026 | 2,717 | 19.18% | 74 | 112 | 163 | partial year |
+| 2025 | 3,784 | 6.82% | 85 | 112 | 163 | complete year |
+| 2026 | 2,827 | 18.61% | 74 | 112 | 163 | partial year |
 
 ### Selected annual diagnostics
 
 - 1991: **1 countries**, 8 studies
 - 2000: **56 countries**, 369 studies
 - 2010: **100 countries**, 3,143 studies
-- 2020: **91 countries**, 3,337 studies
+- 2020: **91 countries**, 3,338 studies
 - 2025: **85 countries**, 3,784 studies
-- 2026: **74 countries**, 2,717 studies; partial year
+- 2026: **74 countries**, 2,827 studies; partial year
 - Maximum completed-year annual country count: **108** in 2006, 2018
 - Largest completed-year year-over-year increase: **+24** in 1994, 1998 versus the preceding year
 - Largest completed-year year-over-year decrease: **-20** in 2025 versus the preceding year
@@ -75,14 +75,14 @@ Mixed DRUG-containing intervention combinations remain included. One unique NCT 
 ## 2024–2025 breadth diagnostic
 
 - Eligible studies increased from **3,574** to **3,784**.
-- Known-location studies increased from **3,379** to **3,521**.
-- Missing-location percentage increased from **5.46%** to **6.95%**.
+- Known-location studies increased from **3,379** to **3,526**.
+- Missing-location percentage increased from **5.46%** to **6.82%**.
 - Registered country breadth decreased from **105** to **85**.
 - **25** countries present in 2024 were not represented among studies starting in 2025; **5** countries appeared in 2025, for a net change of **-20**.
 - Of the countries not represented in 2025, **18** had only one 2024 study and **7** had multiple 2024 studies.
-- Mean countries per known-location study decreased from **3.46** to **3.34**.
-- Multi-country share among known-location studies decreased from **29.80%** to **28.77%**.
-- Top-10 countries' share of study-country pairs increased from **55.38%** to **56.54%**.
+- Mean countries per known-location study decreased from **3.46** to **3.35**.
+- Multi-country share among known-location studies decreased from **29.80%** to **28.87%**.
+- Top-10 countries' share of study-country pairs increased from **55.37%** to **56.49%**.
 
 | Country | 2024 Studies | 2025 Studies | Status |
 |---|---:|---:|---|
@@ -160,16 +160,16 @@ The primary percentage is the number of eligible studies with at least one regis
 | 2014 | 3.87% | 28.57% | 35.76% | 54.16% | 5.93% | 8.54% | complete year |
 | 2015 | 3.57% | 27.82% | 37.27% | 57.48% | 5.91% | 10.20% | complete year |
 | 2016 | 2.67% | 30.33% | 37.42% | 54.66% | 5.45% | 9.15% | complete year |
-| 2017 | 3.18% | 35.20% | 41.82% | 56.32% | 6.62% | 11.82% | complete year |
-| 2018 | 3.38% | 37.26% | 39.59% | 57.13% | 7.38% | 12.43% | complete year |
+| 2017 | 3.18% | 35.17% | 41.79% | 56.29% | 6.59% | 11.79% | complete year |
+| 2018 | 3.37% | 37.24% | 39.61% | 57.11% | 7.38% | 12.43% | complete year |
 | 2019 | 2.85% | 39.80% | 38.60% | 55.09% | 7.41% | 11.83% | complete year |
-| 2020 | 2.64% | 43.09% | 35.45% | 52.50% | 8.90% | 13.61% | complete year |
-| 2021 | 2.97% | 46.19% | 34.27% | 51.16% | 7.70% | 13.24% | complete year |
+| 2020 | 2.64% | 43.08% | 35.47% | 52.49% | 8.90% | 13.60% | complete year |
+| 2021 | 2.96% | 46.19% | 34.26% | 51.14% | 7.67% | 13.23% | complete year |
 | 2022 | 3.72% | 45.06% | 31.72% | 51.02% | 8.06% | 12.81% | complete year |
-| 2023 | 3.01% | 50.74% | 29.89% | 46.78% | 8.99% | 13.06% | complete year |
-| 2024 | 2.38% | 50.11% | 28.51% | 46.78% | 8.59% | 14.33% | complete year |
-| 2025 | 1.64% | 51.03% | 26.11% | 45.40% | 8.30% | 14.01% | complete year |
-| 2026 | 0.96% | 42.58% | 16.67% | 37.62% | 5.04% | 11.00% | partial year |
+| 2023 | 3.01% | 50.78% | 29.88% | 46.79% | 8.98% | 13.06% | complete year |
+| 2024 | 2.38% | 50.08% | 28.51% | 46.78% | 8.62% | 14.35% | complete year |
+| 2025 | 1.64% | 51.29% | 26.22% | 45.43% | 8.30% | 14.09% | complete year |
+| 2026 | 0.92% | 43.05% | 16.80% | 37.67% | 5.06% | 11.11% | partial year |
 
 Continent mapping source: United Nations Statistics Division M49 geographic regions (https://unstats.un.org/unsd/methodology/m49/overview/)
 
@@ -177,7 +177,7 @@ Continent mapping source: United Nations Statistics Division M49 geographic regi
 
 NEXUS means the eligible study has at least one exact `United States` registered location and at least one exact `China` registered location; it may also include other countries.
 
-- Maximum completed-year annual NEXUS count: **292** in 2025.
+- Maximum completed-year annual NEXUS count: **294** in 2025.
 
 | Year | NEXUS Studies | NEXUS % of All Eligible | NEXUS % of Known-Location | 3-Year Moving Average | Status |
 |---:|---:|---:|---:|---:|---|
@@ -208,15 +208,15 @@ NEXUS means the eligible study has at least one exact `United States` registered
 | 2015 | 41 | 1.28% | 1.40% | 38.7 | complete year |
 | 2016 | 37 | 1.19% | 1.31% | 38.0 | complete year |
 | 2017 | 70 | 2.32% | 2.39% | 49.3 | complete year |
-| 2018 | 106 | 3.34% | 3.42% | 71.0 | complete year |
+| 2018 | 106 | 3.34% | 3.41% | 71.0 | complete year |
 | 2019 | 133 | 4.07% | 4.19% | 103.0 | complete year |
-| 2020 | 148 | 4.44% | 4.62% | 129.0 | complete year |
-| 2021 | 209 | 5.12% | 5.32% | 163.3 | complete year |
-| 2022 | 200 | 5.39% | 5.61% | 185.7 | complete year |
-| 2023 | 211 | 5.89% | 6.14% | 206.7 | complete year |
-| 2024 | 206 | 5.76% | 6.10% | 205.7 | complete year |
-| 2025 | 292 | 7.72% | 8.29% | 236.3 | complete year |
-| 2026 | 104 | 3.83% | 4.74% | 200.7 | partial year |
+| 2020 | 148 | 4.43% | 4.62% | 129.0 | complete year |
+| 2021 | 208 | 5.10% | 5.30% | 163.0 | complete year |
+| 2022 | 200 | 5.39% | 5.61% | 185.3 | complete year |
+| 2023 | 212 | 5.92% | 6.17% | 206.7 | complete year |
+| 2024 | 205 | 5.74% | 6.07% | 205.7 | complete year |
+| 2025 | 294 | 7.77% | 8.34% | 237.0 | complete year |
+| 2026 | 109 | 3.86% | 4.74% | 202.7 | partial year |
 
 ## First-time participation
 
