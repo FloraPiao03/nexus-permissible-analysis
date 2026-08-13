@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+<rect width="1600" height="1200" fill="#fff"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:30px;font-weight:700}.phase{font-size:25px;font-weight:700}.slice{font-size:20px;font-weight:700;fill:#fff}.legend{font-size:21px}.note{font-size:20px;fill:#4f5965}</style>
+<text x="800" y="52" text-anchor="middle" class="title">China-Involved vs. Non China-Involved Studies by Phase, 2020-2025</text>
+<rect x="28" y="138" width="1544" height="1018" fill="none" stroke="#000" stroke-width="2"/>
+<rect x="55" y="160" width="290" height="88" fill="#fff" stroke="#9b9b9b"/>
+<rect x="90" y="176" width="20" height="20" fill="#d55e00"/>
+<text x="122" y="192" class="legend">China-Involved</text>
+<rect x="90" y="212" width="20" height="20" fill="#8da0ae"/>
+<text x="122" y="228" class="legend">Non China-Involved</text>
+<text x="570" y="187" text-anchor="middle" class="phase">Phase 1 (n=10,857)</text>
+<path d="M 570.0,410.0 L 570.0,225.0 A 185.0,185.0 0 0 1 753.0,437.1 Z" fill="#d55e00" stroke="#fff" stroke-width="3"/>
+<text x="656.8" y="332.1" text-anchor="middle" class="slice">27.3%</text>
+<text x="656.8" y="353.1" text-anchor="middle" class="slice">n=2,968</text>
+<path d="M 570.0,410.0 L 753.0,437.1 A 185.0,185.0 0 1 1 570.0,225.0 Z" fill="#8da0ae" stroke="#fff" stroke-width="3"/>
+<text x="483.2" y="481.9" text-anchor="middle" class="slice">72.7%</text>
+<text x="483.2" y="502.9" text-anchor="middle" class="slice">n=7,889</text>
+<text x="1200" y="187" text-anchor="middle" class="phase">Phase 2 (n=7,606)</text>
+<path d="M 1200.0,410.0 L 1200.0,225.0 A 185.0,185.0 0 0 1 1379.6,454.6 Z" fill="#d55e00" stroke="#fff" stroke-width="3"/>
+<text x="1290.3" y="336.3" text-anchor="middle" class="slice">28.9%</text>
+<text x="1290.3" y="357.3" text-anchor="middle" class="slice">n=2,196</text>
+<path d="M 1200.0,410.0 L 1379.6,454.6 A 185.0,185.0 0 1 1 1200.0,225.0 Z" fill="#8da0ae" stroke="#fff" stroke-width="3"/>
+<text x="1109.7" y="477.7" text-anchor="middle" class="slice">71.1%</text>
+<text x="1109.7" y="498.7" text-anchor="middle" class="slice">n=5,410</text>
+<text x="570" y="672" text-anchor="middle" class="phase">Phase 3 (n=4,857)</text>
+<path d="M 570.0,895.0 L 570.0,710.0 A 185.0,185.0 0 0 1 703.1,1023.5 Z" fill="#d55e00" stroke="#fff" stroke-width="3"/>
+<text x="675.6" y="847.2" text-anchor="middle" class="slice">37.2%</text>
+<text x="675.6" y="868.2" text-anchor="middle" class="slice">n=1,808</text>
+<path d="M 570.0,895.0 L 703.1,1023.5 A 185.0,185.0 0 1 1 570.0,710.0 Z" fill="#8da0ae" stroke="#fff" stroke-width="3"/>
+<text x="464.4" y="936.8" text-anchor="middle" class="slice">62.8%</text>
+<text x="464.4" y="957.8" text-anchor="middle" class="slice">n=3,049</text>
+<text x="1200" y="672" text-anchor="middle" class="phase">Phase 4 (n=749)</text>
+<path d="M 1200.0,895.0 L 1200.0,710.0 A 185.0,185.0 0 0 1 1371.8,826.4 Z" fill="#d55e00" stroke="#fff" stroke-width="3"/>
+<text x="1264.3" y="797.1" text-anchor="middle" class="slice">19.0%</text>
+<text x="1264.3" y="818.1" text-anchor="middle" class="slice">n=142</text>
+<path d="M 1200.0,895.0 L 1371.8,826.4 A 185.0,185.0 0 1 1 1200.0,710.0 Z" fill="#8da0ae" stroke="#fff" stroke-width="3"/>
+<text x="1135.7" y="986.9" text-anchor="middle" class="slice">81.0%</text>
+<text x="1135.7" y="1007.9" text-anchor="middle" class="slice">n=607</text>
+<text x="52" y="1132" class="note">Each panel uses all eligible studies in that registered phase; multi-phase studies may appear in more than one panel.</text>
+</svg>

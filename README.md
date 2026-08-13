@@ -8,14 +8,119 @@ ClinicalTrials.gov records registered or planned study facilities. Location meta
 
 The primary denominator is all unique study records accessible through the official ClinicalTrials.gov API v2 at the time of a **completed** harvest. No study type, sponsor, status, phase, date, intervention, or therapeutic-area filters are applied. One unique NCT ID is the unit of analysis.
 
-- `NEXUS`: at least one configured United States location and at least one configured China location.
-- `PERMISSIBLE`: no configured United States location and at least one usable country.
-- `US_ONLY`: at least one configured United States location and no configured China location.
-- `UNKNOWN`: no usable location-country metadata.
+- `UNKNOWN`: no usable registered location-country value.
+- `PERMISSIBLE`: at least one usable country and no configured United States location.
+- `US_ONLY`: the complete unique country set is exactly `{United States}`.
+- `US_NON_CHINA_MULTI`: contains United States, no China, and at least one additional non-US country.
+- `NEXUS`: contains at least one United States location and at least one China location; other countries may also be present.
 
 The baseline definitions are exactly `United States` and `China`. Puerto Rico and other US territories are not automatically US; Hong Kong, Macau/Macao, and Taiwan are not automatically China. All definitions live in `config.json`.
 
-The four buckets are mutually exclusive and exhaustive. Missing location data is never Permissible. Percentages among studies with known locations are reported only as secondary metrics.
+The five buckets are mutually exclusive and exhaustive. Missing location data is never Permissible. Nexus and Permissible alone do not partition the registry: known-location studies are first split into `NO_US` (= PERMISSIBLE) and `HAS_US`; `HAS_US` is then split into `US_ONLY`, `US_NON_CHINA_MULTI`, and `NEXUS`.
+
+
+```text
+All studies
+├── UNKNOWN
+└── Known-location studies
+    ├── NO_US
+    │   └── PERMISSIBLE
+    └── HAS_US
+        ├── US_ONLY
+        ├── US_NON_CHINA_MULTI
+        └── NEXUS
+```
+
+Percentages among known-location and HAS_US studies are secondary diagnostics. The all-study denominator remains primary.
+
+## Supported analysis scopes
+
+The project preserves two separately labeled views using the same validated five-category geography model:
+
+1. **All accessible studies** — the original complete-snapshot view in `runs/run_<timestamp>/out_v2/`.
+2. **Interventional only** — an additional view where `study_type == "INTERVENTIONAL"`, written to `runs/run_<timestamp>/out_interventional/`.
+
+The Interventional denominator includes only the exact registry value `INTERVENTIONAL`; it does not include `OBSERVATIONAL`, `EXPANDED_ACCESS`, blank, or other study types. This view filters the validated `out_v2/trials.csv` and reuses its final classifications, so it does not require another API harvest or modify the raw snapshot.
+
+## Start-date period comparison
+
+New snapshots also retain ClinicalTrials.gov `StartDate` and `StartDateType`. The time comparison asks: among studies whose **registered Start Dates** fall in different periods, how has the geographic distribution of registered trial locations changed? Start Date is registry metadata, not confirmed first-participant enrollment, and the descriptive comparison does not imply causation.
+
+By default, the UTC harvest date in `manifest.json` is the deterministic reference date. It can be overridden with `--reference-date YYYY-MM-DD`. Exact calendar-year boundaries are used:
+
+- `RECENT_3Y`: `reference date − 3 years < Start Date <= reference date`.
+- `YEARS_4_TO_6_AGO`: `reference date − 6 years < Start Date <= reference date − 3 years`.
+- Older, future, missing/unparseable, and boundary-crossing partial dates are labeled `OLDER_THAN_6Y`, `FUTURE`, `TIME_UNKNOWN`, and `TIME_AMBIGUOUS` respectively.
+
+Month- and year-precision dates are treated as possible date intervals. They are assigned only when the entire interval is contained in one cohort; no day or month is silently invented.
+
+### Lightweight streaming summaries
+
+Use `--summary-only` when only aggregate Nexus / Permissible and time-period results are needed. This mode verifies the complete manifest, every page and SHA-256 hash, streams one raw page at a time, deduplicates by NCT ID, and immediately updates shared geographic/time counters. It does not retain all studies or locations in memory.
+
+```bash
+python analyze.py \
+  --run runs/run_<full-run-timestamp> \
+  --output-name out_time_summary \
+  --summary-only
+```
+
+It writes only `summary.json`, `summary.md`, and `nexus_permissible_summary.xlsx`. It does not create row-level CSV files, country files, Study Detail, or Locations sheets. The summary workbook contains Executive Summary, Classification Summary, Time Comparison, Time Location Pivot, Definitions, and Run Metadata. Complete manifests must explicitly confirm that no next-page token remains. Hash, raw/unique count, duplicate, all six time-cohort geographic reconciliations, and JSON/Markdown/Excel aggregate agreement remain mandatory. Partial or internally contradictory snapshots are rejected in summary-only mode.
+
+This reduces persistent analysis output from hundreds of megabytes to a few kilobytes while preserving the raw snapshot for reproducibility. Standard mode remains available for detailed exports and uses the same geographic classifier, date parser, time-cohort assignment, and aggregate-summary builder.
+
+### Industry Drug-containing candidate audit
+
+New snapshots request the structured API v2 fields `InterventionType`, `LeadSponsorClass`, and `Phase`. Use `--study-product drug` for the candidate population defined as `LeadSponsorClass == INDUSTRY` and at least one registered `InterventionType == DRUG`. Use `--study-product drug-only` when the deduplicated intervention-type set must be exactly `{DRUG}`. The default is `--study-product all`, so existing all-study behavior remains unchanged.
+
+```bash
+python analyze.py \
+  --run runs/run_<completed-timestamp> \
+  --output-name out_time_drug_summary \
+  --summary-only \
+  --study-product drug
+```
+
+The candidate filter is applied after NCT ID deduplication and before the selected time/geographic counters are updated. In `--summary-only` mode, a small counter preserves every exact intervention-type combination observed among Industry Drug-containing studies and produces the `Intervention_Type_Audit` sheet without retaining row-level studies. The final exclusion rule for combinations such as DRUG + DEVICE, DRUG + OTHER, or DRUG + PROCEDURE is intentionally not fixed until the observed distribution is reviewed. A snapshot whose manifest lacks either required field is rejected; missing fields are never inferred.
+
+Add `--study-type interventional` to restrict every analysis denominator and the intervention-type audit to records whose structured `StudyType` is exactly `INTERVENTIONAL`. The default remains `--study-type all`, preserving prior outputs.
+
+```bash
+.venv/bin/python analyze.py \
+  --run runs/run_<timestamp> \
+  --output-name out_time_interventional_industry_drug_audit \
+  --summary-only \
+  --study-type interventional \
+  --study-product drug
+```
+
+Add `--phase-audit` to require a Phase-enabled snapshot and emit two aggregate-only workbook sheets: `Phase_Audit_Summary` and `Phase_By_Intervention`. The audit preserves exact registered phase combinations and also assigns mutually exclusive decision groups (`EARLY_TO_PHASE3_ONLY`, `CONTAINS_PHASE4`, `NA_ONLY`, `MISSING`, and `OTHER_COMBINATION`). It compares all DRUG-containing, DRUG-only, and corresponding no-PHASE4 views without imposing a final innovation filter. `CONTAINS_PHASE4` is a postmarketing proxy, not proof that a study is non-innovative.
+
+```bash
+.venv/bin/python analyze.py \
+  --run runs/run_<phase-enabled-timestamp> \
+  --output-name out_phase_interventional_industry_drug_audit \
+  --summary-only \
+  --study-type interventional \
+  --study-product drug \
+  --phase-audit
+```
+
+### Country-participation trend
+
+`country_participation.py` is an additive, aggregate-only analysis of registered location-country breadth by Study Start Year. Its cohort is exactly `StudyType == INTERVENTIONAL`, `LeadSponsorClass == INDUSTRY`, and at least one `InterventionType == DRUG`; mixed DRUG-containing combinations remain included. It verifies the completed manifest and every raw-page SHA-256, deduplicates NCT IDs, and does not change the Nexus/Permissible model.
+
+```bash
+.venv/bin/python country_participation.py \
+  --run runs/run_<completed-timestamp> \
+  --outdir reports/country_participation_trend
+```
+
+Outputs are lightweight annual, first-participation, and returning-country CSVs; a summary-only workbook and Markdown report; and PNG/SVG trend charts. No study-level export is created. Pre-2000 Start Dates are explicitly labeled as retrospectively registered-period data. Tables retain the current snapshot year as a labeled partial observation, while all three trend charts end at the latest complete Start Year and exclude the partial current year.
+
+The same analysis also reports annual continent participation rates using the explicit, version-controlled `continent_mapping.json`. The six-continent view is derived from the UN Statistics Division M49 regions: Northern America, Central America, and the Caribbean are grouped as North America, while South America remains separate. A study with registered locations in multiple continents counts once in each participating continent, so continent percentages are non-exclusive and may sum to more than 100%. The primary denominator remains all eligible studies starting in the year, including studies with no usable location country.
+
+An additional annual NEXUS series counts eligible studies whose exact registered location-country set contains both `United States` and `China` (and may contain other countries). It reports annual counts, percentages of all and known-location studies, and a 3-year moving average, with PNG/SVG charts and a summary-only Excel sheet.
 
 ## Setup and quick start
 
@@ -27,17 +132,30 @@ python -m pip install -r requirements.txt
 python selftest.py
 
 python harvest.py --outdir runs --limit-pages 3
-python analyze.py --run runs/run_<smoke-test-timestamp>
+python analyze.py --run runs/run_<smoke-test-timestamp> --output-name out_v2
 
 python harvest.py --outdir runs
-python analyze.py --run runs/run_<full-run-timestamp>
+python analyze.py --run runs/run_<full-run-timestamp> --output-name out_time \
+  --reference-date 2026-07-16
+
+python analyze.py --run runs/run_<full-run-timestamp> \
+  --output-name out_time_summary --summary-only
+
+python analyze_interventional.py \
+  --source runs/run_<full-run-timestamp>/out_v2/trials.csv \
+  --all-summary runs/run_<full-run-timestamp>/out_v2/summary.json \
+  --outdir runs/run_<full-run-timestamp>/out_interventional
+
+python audit_interventional.py \
+  --source runs/run_<full-run-timestamp>/out_v2/trials.csv \
+  --outdir runs/run_<full-run-timestamp>/out_interventional
 ```
 
 Do not cite limited-page output as a final result. It is visibly marked `PARTIAL_NON_FINAL_SMOKE_TEST` throughout the generated reports. A snapshot is complete only when pagination ends with no next-page token; no expected study count is hard-coded.
 
 ## Workflow
 
-`harvest.py` requests only the required API v2 fields, uses configurable page size, timeout, User-Agent, exponential-backoff retries for network errors, HTTP 429 and 5xx responses, and follows every next-page token. Raw page JSON files are written to a timestamped directory. The manifest records parameters, counts, completeness, duplicates, and SHA-256 hashes. Failed harvests receive `HARVEST_FAILED.txt` and are not analyzable as valid snapshots.
+`harvest.py` requests only the required API v2 fields, including registered Start Date, Start Date type, Intervention Type, and Lead Sponsor Class, uses configurable page size, timeout, User-Agent, exponential-backoff retries for network errors, HTTP 429 and 5xx responses, and follows every next-page token. Raw page JSON files are written to a timestamped directory. The manifest records parameters, counts, completeness, duplicates, and SHA-256 hashes. Failed harvests receive `HARVEST_FAILED.txt` and are not analyzable as valid snapshots.
 
 `analyze.py` verifies the manifest, every raw-file hash, raw and unique counts, and then deduplicates by NCT ID (first observed record wins deterministically). It retains study type and status as metadata without filtering. It writes:
 
@@ -45,9 +163,20 @@ Do not cite limited-page output as a final result. It is visibly marked `PARTIAL
 - `trials.csv` (one row per unique NCT ID)
 - `locations_long.csv` (one row per registered facility/location)
 - `country_counts.csv` and `country_vocabulary.csv`
-- `nexus_permissible_results.xlsx` with the seven required worksheets
+- `nexus_permissible_results.xlsx` with the required worksheets. Large location data is automatically split into `Locations`, `Locations_002`, and subsequent sheets according to `excel_location_rows_per_sheet` (default 500,000 data rows per sheet).
 
-Outputs are placed in `runs/run_<timestamp>/out/`. The entire `runs/` tree is gitignored, so generated API data and reports are not committed.
+The workbook also contains `Time_Comparison` and `Time_Location_Pivot`; `Study_Detail` retains the raw/canonical Start Date, original precision and type, and assigned time cohort. Each target cohort has its own denominator and a zero-difference five-category reconciliation.
+
+Revised five-category outputs are placed in `runs/run_<timestamp>/out_v2/` by default, preserving historical `out/` results. Use `--output-name` for another explicit versioned directory. The entire `runs/` tree is gitignored, so generated API data and reports are not committed unless deliberately force-added.
+
+The Interventional-only command creates `summary_interventional.md`, `summary_interventional.json`, `trials_interventional.csv`, and `nexus_permissible_interventional.xlsx` in the separate `out_interventional/` directory. The workbook contains Executive Summary, Classification Summary, Study Detail, Definitions, Run Metadata, and All-vs-Interventional Comparison sheets.
+
+## Published results — 2026-07-16 snapshot
+
+- **All-study results:** 594,066 studies; the existing workbook remains available from the [`results-20260716` release](https://github.com/FloraPiao03/nexus-permissible-analysis/releases/tag/results-20260716).
+- **Interventional-only results:** exact scope `study_type == "INTERVENTIONAL"`; 453,297 studies, including 2,377 NEXUS (0.5244%) and 250,059 PERMISSIBLE (55.1645%). Review the [committed Interventional summary](runs/run_20260716T092516Z/out_interventional/summary_interventional.md) or download the detailed workbook from the [`results-interventional-20260716` release](https://github.com/FloraPiao03/nexus-permissible-analysis/releases/tag/results-interventional-20260716).
+
+Interventional workbook SHA-256: `697b80cab03bc55c57863ffd47ecc7fbbad696deb6f8077db66071e84e9f45ce`.
 
 ## Validation
 
@@ -60,7 +189,7 @@ python selftest.py
 python -m unittest discover -v
 ```
 
-Synthetic cases manually specify expected results for US+China, US only, China only, European locations, missing locations, Puerto Rico, Hong Kong, Taiwan, duplicate NCT IDs, and both observational and interventional studies.
+Synthetic cases manually specify expected results for US+China, US-only, US+non-China countries, China-only, European locations, missing/blank/whitespace locations, Puerto Rico and US territories, Hong Kong, Macau/Macao, Taiwan, exact-string aliases, duplicate NCT IDs, and both observational and interventional studies.
 
 ## Known limitations
 

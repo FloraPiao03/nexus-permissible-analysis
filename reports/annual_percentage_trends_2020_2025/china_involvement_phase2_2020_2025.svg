@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="850" viewBox="0 0 1200 850">
+<rect width="1200" height="850" fill="#fff"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111}.title{font-size:27px;font-weight:700}.phase{font-size:23px;font-weight:700}.slice{font-size:18px;font-weight:700;fill:#fff}.legend{font-size:22px}.note{font-size:14px;fill:#4f5965}</style>
+<text x="600" y="45" text-anchor="middle" class="title">China-Involved vs. Non China-Involved Studies by Phase</text>
+<text x="600" y="80" text-anchor="middle" class="phase">2020-2025 — Phase 2</text>
+<rect x="28" y="108" width="1144" height="710" fill="none" stroke="#000" stroke-width="2"/>
+<path d="M 385.0,445.0 L 385.0,190.0 A 255.0,255.0 0 0 1 632.5,506.4 Z" fill="#d55e00" stroke="#fff" stroke-width="3"/>
+<text x="509.5" y="343.6" text-anchor="middle" class="slice">28.9%</text>
+<text x="509.5" y="367.6" text-anchor="middle" class="slice">n=2,196</text>
+<path d="M 385.0,445.0 L 632.5,506.4 A 255.0,255.0 0 1 1 385.0,190.0 Z" fill="#8da0ae" stroke="#fff" stroke-width="3"/>
+<text x="260.5" y="538.4" text-anchor="middle" class="slice">71.1%</text>
+<text x="260.5" y="562.4" text-anchor="middle" class="slice">n=5,410</text>
+<rect x="700" y="325" width="440" height="135" fill="#fff" stroke="#9b9b9b"/>
+<rect x="718" y="353" width="22" height="22" fill="#d55e00"/>
+<text x="754" y="370" class="legend">China-Involved (n=2,196)</text>
+<rect x="718" y="404" width="22" height="22" fill="#8da0ae"/>
+<text x="754" y="421" class="legend">Non China-Involved (n=5,410)</text>
+<text x="700" y="479" class="note">Total studies in this registered phase: 7,606</text>
+<text x="52" y="795" class="note">A study registered in multiple phases appears once in each applicable phase chart.</text>
+</svg>

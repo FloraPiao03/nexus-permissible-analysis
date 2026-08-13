@@ -1,0 +1,252 @@
+Return Year,Country,Previous Active Year,Gap Length (Years),Studies in Return Year
+1994,Denmark,1992,1,1
+1994,Finland,1992,1,1
+1994,Norway,1992,1,1
+1994,Sweden,1992,1,1
+1994,United Kingdom,1992,1,1
+1996,Argentina,1994,1,1
+1996,France,1994,1,2
+1996,Japan,1992,3,5
+1996,New Zealand,1994,1,1
+1996,Puerto Rico,1994,1,1
+1997,Portugal,1995,1,1
+1997,Slovakia,1994,2,1
+1997,South Africa,1995,1,1
+1997,Spain,1995,1,1
+1997,Switzerland,1995,1,1
+1998,Belgium,1996,1,12
+1998,Hong Kong,1996,1,1
+1998,Ireland,1995,2,6
+1998,Mexico,1995,2,3
+1998,New Zealand,1996,1,5
+1998,Russia,1995,2,3
+1998,Singapore,1994,3,2
+1998,Slovenia,1994,3,2
+1999,Puerto Rico,1996,2,6
+1999,South Korea,1997,1,1
+2000,Bosnia and Herzegovina,1998,1,1
+2000,Bulgaria,1998,1,4
+2000,Chile,1998,1,4
+2000,Egypt,1998,1,1
+2000,Estonia,1998,1,4
+2000,Greece,1998,1,7
+2000,Hong Kong,1998,1,5
+2000,Ireland,1998,1,6
+2000,Latvia,1998,1,4
+2000,Peru,1998,1,2
+2000,Romania,1998,1,4
+2000,Singapore,1998,1,2
+2000,Slovakia,1998,1,7
+2000,Taiwan,1998,1,3
+2000,Turkey (Türkiye),1998,1,4
+2001,Guatemala,1999,1,2
+2001,Panama,1999,1,3
+2001,Slovenia,1999,1,2
+2001,South Korea,1999,1,8
+2001,Uruguay,1998,2,3
+2001,Venezuela,1998,2,5
+2002,Dominican Republic,1999,2,4
+2003,Malta,1998,4,1
+2003,Republic of the Congo,2001,1,1
+2003,Serbia,1999,3,4
+2004,Ecuador,2002,1,3
+2004,Jordan,2002,1,2
+2004,Kenya,2002,1,1
+2004,Luxembourg,1999,4,2
+2004,Nigeria,2002,1,1
+2004,United Arab Emirates,2001,2,3
+2005,Algeria,2002,2,1
+2005,Cameroon,2003,1,1
+2005,Cyprus,2001,3,2
+2005,Jamaica,2001,3,1
+2005,Malta,2003,1,2
+2005,Tanzania,2002,2,2
+2006,Albania,2004,1,2
+2006,Andorra,2004,1,1
+2006,Belize,2003,2,1
+2006,Bosnia and Herzegovina,2004,1,8
+2006,El Salvador,2003,2,1
+2006,Georgia,2004,1,2
+2006,Ghana,2004,1,3
+2006,Honduras,2001,4,1
+2006,Iran,2002,3,1
+2006,Montenegro,2003,2,1
+2006,Nigeria,2004,1,2
+2006,North Macedonia,2004,1,4
+2006,Reunion,1998,7,1
+2006,Sri Lanka,2004,1,1
+2007,Algeria,2005,1,1
+2007,The Bahamas,2004,2,1
+2008,Benin,2006,1,1
+2008,Burkina Faso,2006,1,2
+2008,El Salvador,2006,1,2
+2008,Ghana,2006,1,1
+2008,Uganda,2005,2,1
+2009,Albania,2007,1,1
+2009,Bangladesh,2003,5,1
+2009,Botswana,2007,1,1
+2009,Cameroon,2007,1,1
+2009,Jamaica,2005,3,1
+2009,Kuwait,2007,1,3
+2009,Malawi,2003,5,1
+2009,Rwanda,2006,2,1
+2009,Sri Lanka,2006,2,1
+2009,The Bahamas,2007,1,4
+2009,Uruguay,2007,1,1
+2010,Bahrain,2007,2,1
+2010,El Salvador,2008,1,1
+2010,Ghana,2008,1,1
+2010,Grenada,2008,1,1
+2010,Iran,2006,3,1
+2010,Kazakhstan,2005,4,3
+2010,Montenegro,2008,1,1
+2010,Mozambique,2006,3,1
+2010,Uganda,2008,1,1
+2011,Albania,2009,1,2
+2011,Bangladesh,2009,1,2
+2011,Belize,2008,2,4
+2011,Cyprus,2009,1,1
+2011,Gabon,2009,1,2
+2011,Honduras,2008,2,2
+2011,Jamaica,2009,1,1
+2011,Monaco,2009,1,1
+2011,Oman,2006,4,2
+2011,Serbia and Montenegro,2009,1,1
+2012,Jordan,2010,1,5
+2012,Kazakhstan,2010,1,3
+2012,Montenegro,2010,1,2
+2012,Nigeria,2006,5,1
+2012,Republic of the Congo,2003,8,1
+2012,Uruguay,2010,1,2
+2012,Venezuela,2010,1,4
+2013,Bahrain,2010,2,1
+2013,Belize,2011,1,1
+2013,Cameroon,2009,3,1
+2013,Cyprus,2011,1,3
+2013,Ghana,2010,2,1
+2013,Kenya,2011,1,2
+2013,Kuwait,2011,1,2
+2013,Mozambique,2010,2,1
+2013,Oman,2011,1,2
+2013,Senegal,2007,5,1
+2013,Tanzania,2011,1,1
+2013,The Gambia,2003,9,1
+2013,Zimbabwe,2011,1,1
+2014,Costa Rica,2011,2,1
+2014,Iran,2012,1,1
+2014,Rwanda,2011,2,2
+2014,Serbia and Montenegro,2012,1,1
+2014,The Bahamas,2012,1,1
+2014,Venezuela,2012,1,1
+2015,Bahrain,2013,1,1
+2015,Benin,2012,2,1
+2015,Burkina Faso,2013,1,1
+2015,Cameroon,2013,1,1
+2015,Cyprus,2013,1,2
+2015,Gabon,2011,3,1
+2015,Jamaica,2013,1,1
+2015,Mali,2008,6,1
+2015,Monaco,2011,3,1
+2015,Mozambique,2013,1,1
+2015,Nigeria,2012,2,1
+2015,Oman,2013,1,2
+2015,Senegal,2013,1,1
+2015,Tanzania,2013,1,1
+2015,Virgin Islands,2007,7,1
+2016,Armenia,2013,2,1
+2016,Luxembourg,2014,1,2
+2016,Rwanda,2014,1,1
+2016,Sri Lanka,2014,1,2
+2017,Bahrain,2015,1,1
+2017,Bangladesh,2014,2,1
+2017,Botswana,2009,7,1
+2017,Burkina Faso,2015,1,1
+2017,Cameroon,2015,1,1
+2017,Côte d’Ivoire,2009,7,1
+2017,Democratic Republic of the Congo,2013,3,1
+2017,El Salvador,2015,1,2
+2017,Gabon,2015,1,3
+2017,Ghana,2013,3,1
+2017,Mali,2015,1,2
+2017,Mauritius,2015,1,5
+2017,Morocco,2015,1,3
+2017,Republic of the Congo,2012,4,1
+2017,Tanzania,2015,1,1
+2017,Zimbabwe,2014,2,1
+2018,Albania,2012,5,2
+2018,Belize,2016,1,3
+2018,Benin,2015,2,1
+2018,Central African Republic,2013,4,1
+2018,Cuba,2009,8,2
+2018,Jamaica,2016,1,1
+2018,Madagascar,2006,11,1
+2018,Montenegro,2014,3,1
+2018,Oman,2016,1,6
+2018,Reunion,2006,11,1
+2018,Senegal,2015,2,4
+2018,The Gambia,2013,4,1
+2018,Zambia,2006,11,1
+2019,Bolivia,2016,2,1
+2019,Cyprus,2015,3,2
+2019,Côte d’Ivoire,2017,1,2
+2019,Guadeloupe,1998,20,1
+2019,Mali,2017,1,1
+2019,Martinique,2014,4,1
+2019,Nigeria,2015,3,2
+2020,Bangladesh,2018,1,5
+2020,Burkina Faso,2018,1,1
+2020,Democratic Republic of the Congo,2017,2,1
+2020,El Salvador,2017,2,1
+2020,Honduras,2016,3,1
+2020,Sri Lanka,2018,1,1
+2021,Albania,2019,1,2
+2021,Algeria,2019,1,1
+2021,Cyprus,2019,1,1
+2021,Côte d’Ivoire,2019,1,1
+2021,Gabon,2018,2,1
+2021,Iran,2018,2,1
+2021,Luxembourg,2017,3,1
+2021,Mali,2019,1,1
+2021,Montenegro,2018,2,1
+2021,Republic of the Congo,2017,3,1
+2021,Rwanda,2018,2,1
+2021,Tanzania,2018,2,2
+2021,Zambia,2018,2,1
+2022,Ecuador,2016,5,1
+2022,Honduras,2020,1,1
+2022,Malawi,2011,10,2
+2022,Mongolia,2018,3,1
+2022,Mozambique,2017,4,1
+2022,Senegal,2020,1,1
+2022,The Bahamas,2014,7,1
+2022,Uzbekistan,2019,2,1
+2023,Albania,2021,1,1
+2023,American Samoa,2009,13,1
+2023,Gabon,2021,1,1
+2023,Luxembourg,2021,1,3
+2023,Montenegro,2021,1,1
+2023,The Gambia,2018,4,1
+2023,Zambia,2021,1,1
+2024,Bangladesh,2022,1,3
+2024,Botswana,2017,6,1
+2024,Democratic Republic of the Congo,2022,1,3
+2024,El Salvador,2022,1,1
+2024,Honduras,2022,1,1
+2024,Malawi,2022,1,1
+2024,Mali,2021,2,1
+2024,Niger,2018,5,1
+2024,Reunion,2018,5,1
+2024,Rwanda,2022,1,1
+2024,Sri Lanka,2022,1,1
+2024,Tanzania,2022,1,1
+2024,Uzbekistan,2022,1,2
+2024,Zimbabwe,2018,5,2
+2025,Cyprus,2022,2,1
+2025,Martinique,2019,5,1
+2025,Nigeria,2023,1,2
+2025,Oman,2023,1,4
+2026,Costa Rica,2024,1,1
+2026,Honduras,2024,1,1
+2026,Montenegro,2024,1,1
+2026,The Gambia,2023,2,1
+2026,Uruguay,2012,13,1

@@ -1,0 +1,60 @@
+{
+  "result_status": "FINAL_COMPLETE_SNAPSHOT",
+  "snapshot_complete": true,
+  "harvest_timestamp_utc": "2026-07-16T09:40:30.000346+00:00",
+  "unit_of_analysis": "one unique NCT ID",
+  "total_studies": 594066,
+  "known_location_studies": 534211,
+  "buckets": {
+    "NEXUS": {
+      "count": 2521,
+      "percentage": 0.004243636228971192
+    },
+    "PERMISSIBLE": {
+      "count": 340665,
+      "percentage": 0.5734463847451293
+    },
+    "US_ONLY": {
+      "count": 191025,
+      "percentage": 0.32155518073749384
+    },
+    "UNKNOWN": {
+      "count": 59855,
+      "percentage": 0.10075479828840567
+    }
+  },
+  "secondary_known_location": {
+    "denominator": 534211,
+    "nexus_percentage": 0.004719109116060882,
+    "permissible_percentage": 0.637697464110623
+  },
+  "definitions": {
+    "us_countries": [
+      "United States"
+    ],
+    "china_countries": [
+      "China"
+    ],
+    "tracked_separately": {
+      "hong_kong": [
+        "Hong Kong"
+      ],
+      "macau": [
+        "Macau",
+        "Macao"
+      ],
+      "taiwan": [
+        "Taiwan"
+      ],
+      "us_territories": [
+        "Puerto Rico",
+        "Guam",
+        "American Samoa",
+        "Northern Mariana Islands",
+        "Virgin Islands (U.S.)"
+      ]
+    }
+  },
+  "duplicate_nct_ids_detected": {},
+  "location_proxy_limitation": "ClinicalTrials.gov locations are registered or planned facilities; they do not confirm participant nationality or actual enrollment by country."
+}

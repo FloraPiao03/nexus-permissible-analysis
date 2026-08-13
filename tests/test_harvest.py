@@ -1,0 +1,70 @@
+import json
+import http.client
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import harvest
+
+
+def study(nct_id):
+    return {"protocolSection": {"identificationModule": {"nctId": nct_id}}}
+
+
+class HarvestResumeTests(unittest.TestCase):
+    def test_minimum_requested_fields_include_candidate_audit_fields(self):
+        fields = set(harvest.FIELDS.split(","))
+        self.assertIn("InterventionType", fields)
+        self.assertIn("LeadSponsorClass", fields)
+        self.assertIn("Phase", fields)
+        self.assertNotIn("InterventionName", fields)
+        self.assertNotIn("LeadSponsorName", fields)
+
+    def test_incomplete_chunked_response_is_retried(self):
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.__exit__.return_value = False
+        with patch("harvest.urllib.request.urlopen", return_value=response), \
+             patch("harvest.json.load", side_effect=[
+                 http.client.IncompleteRead(b"partial", 10),
+                 {"studies": []},
+             ]) as load, patch("harvest.time.sleep"):
+            result = harvest.request_json(
+                "https://example.test", user_agent="test", timeout=1, retries=1, base=0,
+            )
+        self.assertEqual(result, {"studies": []})
+        self.assertEqual(load.call_count, 2)
+
+    def test_resume_preserves_existing_page_and_completes_manifest(self):
+        with tempfile.TemporaryDirectory() as td:
+            run = Path(td) / "run_failed"
+            raw = run / "raw"
+            raw.mkdir(parents=True)
+            first = raw / "page_000001.json"
+            first.write_text(json.dumps({"studies": [study("NCT00000001")], "nextPageToken": "resume-token"}), encoding="utf-8")
+            original_bytes = first.read_bytes()
+            (run / "HARVEST_FAILED.txt").write_text("network failure\n", encoding="utf-8")
+            final_payload = {"studies": [study("NCT00000002")]}
+
+            with patch("harvest.request_json", return_value=final_payload) as request:
+                self.assertEqual(harvest.main(["--resume-run", str(run)]), 0)
+
+            self.assertEqual(first.read_bytes(), original_bytes)
+            self.assertEqual(request.call_count, 1)
+            self.assertIn("pageToken=resume-token", request.call_args.args[0])
+            manifest = json.loads((run / "manifest.json").read_text())
+            self.assertTrue(manifest["snapshot_complete"])
+            self.assertFalse(manifest["next_page_token_remaining"])
+            self.assertIsNone(manifest["limit_pages"])
+            self.assertEqual(manifest["resumed_from_page"], 1)
+            self.assertEqual(manifest["page_count"], 2)
+            self.assertEqual(manifest["raw_study_count"], 2)
+            self.assertEqual(manifest["unique_nct_count"], 2)
+            self.assertEqual(manifest["duplicate_nct_count"], 0)
+            self.assertFalse((run / "HARVEST_FAILED.txt").exists())
+            self.assertEqual(len(list(run.glob("HARVEST_FAILED_BEFORE_RESUME_*.txt"))), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()
